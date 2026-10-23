@@ -1,0 +1,22 @@
+{
+  "name": "Valeria Zoe",
+  "title": "Mis XV años",
+  "ceremonyISO": "2026-11-29T17:00:00-06:00",
+  "timezoneLabel": "Hora de la Ciudad de México",
+  "parents": ["Jannet Cristina Guerrero Castro", "José Ángel Gpe Martínez Lopez"],
+  "godmother": "Ana Karen Catarino Castro",
+  "church": {
+    "name": "Parroquia Niño Jesús Milagroso",
+    "address": "Lázaro Cárdenas 969, Ixtlahuacan, Iztapalapa, 09630 Ciudad de México, CDMX",
+    "time": "17:00 hrs"
+  },
+  "venue": {
+    "name": "Jardín Xalpa",
+    "address": "Teatinos 11, Xalpa, Iztapalapa, 09640 Ciudad de México, CDMX",
+    "time": "Recepción: 18:00 a 18:30 hrs"
+  },
+  "dressCode": {
+    "title": "Código de vestimenta",
+    "text": "Etiqueta formal. Será una noche elegante y te pedimos vestir en consecuencia. Para que la quinceañera luzca en su día, te agradecemos evitar los tonos beige, dorado y blanco."
+  }
+}
