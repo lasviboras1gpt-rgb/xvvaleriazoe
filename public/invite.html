@@ -152,7 +152,7 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:60;pointer-event
 ===================================================== */
 #scroll{position:relative;z-index:10;display:none;padding:0 0 40px;overflow-x:clip}
 #scroll.on{display:block}
-.parchment{position:relative;width:var(--sheet-w);margin:0 auto;padding:62px 15px 84px;isolation:isolate;
+.parchment{position:relative;width:var(--sheet-w);margin:0 auto;padding:62px 15px 214px;isolation:isolate;
   background:
     radial-gradient(120% 40% at 50% 0%,rgba(255,251,237,.85),transparent 70%),
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .31  0 0 0 0 .1  0 0 0 .2 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
@@ -191,14 +191,23 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:60;pointer-event
 .bl7{left:4%;bottom:60vh;height:26vh;--dur:5s;--del:-3s;opacity:.45}
 .bl8{right:5%;bottom:64vh;height:24vh;--dur:5.4s;--del:-1.4s;opacity:.4}
 
-#butterflies{position:fixed;inset:0;z-index:20;pointer-events:none;overflow:hidden}
-.bf{position:absolute;left:0;top:0;will-change:transform;opacity:0;transition:opacity 1.2s ease;filter:drop-shadow(0 3px 3px rgba(120,80,10,.3))}
-#butterflies.on .bf{opacity:.95}
-.bf svg{display:block;width:100%;height:auto;overflow:visible}
-.bf .wl,.bf .wr{transform-box:view-box;transform-origin:50px 40px;animation:flapL var(--fl,.5s) ease-in-out infinite alternate}
-.bf .wr{animation-name:flapR}
-@keyframes flapL{from{transform:scaleX(1)}to{transform:scaleX(.28)}}
-@keyframes flapR{from{transform:scaleX(-1)}to{transform:scaleX(-.28)}}
+/* Hojas y burbujas doradas: muy suaves, por encima del fondo pero sin estorbar la lectura */
+#floaters{position:fixed;z-index:4;top:0;bottom:0;left:50%;width:var(--sheet-w);translate:-50% 0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 1.8s ease .6s}
+#scroll.settled #floaters{opacity:1}
+.fl{position:absolute;left:0;top:0;will-change:transform}
+.fl.leaf{opacity:.45}
+.fl.leaf svg{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 1px 1.5px rgba(110,75,15,.28))}
+.fl.bub{border-radius:50%;opacity:.5;border:1px solid rgba(184,146,58,.6);
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.9) 0 7%,rgba(255,238,170,.3) 24%,rgba(226,192,104,.16) 62%,rgba(184,146,58,.36) 100%);
+  box-shadow:inset -2px -3px 6px rgba(255,236,170,.5),0 0 7px rgba(226,192,104,.28)}
+/* Guías verde cemento en las esquinas */
+.corner-vine{position:absolute;z-index:7;pointer-events:none}
+.corner-vine svg{display:block;width:100%;height:100%;overflow:visible}
+.cv-tr{top:2px;right:2px;width:min(58%,270px);aspect-ratio:270/190}
+.cv-bl{bottom:8px;left:2px;width:min(64%,300px);aspect-ratio:300/200}
+.cv-tr svg{transform-origin:100% 0;animation:vsway 7s ease-in-out infinite alternate}
+.cv-bl svg{transform-origin:0 100%;animation:vsway 8s ease-in-out -2s infinite alternate}
+@keyframes vsway{from{transform:rotate(-.9deg)}to{transform:rotate(1.1deg)}}
 
 .panels{position:relative;z-index:3;display:flex;flex-direction:column;gap:64px}
 .panel{position:relative;padding:54px 22px 30px;text-align:center;
@@ -229,8 +238,16 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:60;pointer-event
 .hero .mono{width:128px;height:128px;margin:0 auto;display:block;filter:drop-shadow(0 2px 2px rgba(120,85,25,.3))}
 .hero .t-mis{margin:.1em 0 0;font:400 clamp(38px,11.4vw,54px)/1.08 var(--font-script);padding:.04em .1em;white-space:nowrap}
 .hero .t-name{margin:0;font:400 clamp(46px,14.6vw,74px)/1.04 var(--font-script);padding:.04em .1em;white-space:nowrap}
-.dress{display:block;width:min(64%,236px);margin:.2em auto 0;filter:drop-shadow(0 10px 10px rgba(110,75,20,.28));animation:floaty 6s ease-in-out infinite}
-@keyframes floaty{50%{transform:translateY(-5px)}}
+.dress{display:block;width:min(90%,340px);margin:.7em auto .2em}
+.df{position:relative;animation:floaty 6s ease-in-out infinite}
+.df-arch{padding:7px;border-radius:50% 50% 12px 12px / 36% 36% 12px 12px;
+  background:linear-gradient(135deg,#7d5d1a,#f3dc92 28%,#b8923a 52%,#fbeab0 76%,#8c6a1f);
+  box-shadow:0 12px 22px rgba(110,75,20,.32),inset 0 0 0 1px rgba(255,246,214,.6)}
+.df-in{border-radius:50% 50% 8px 8px / 35% 35% 8px 8px;aspect-ratio:1/1.08;overflow:hidden;position:relative;
+  background:radial-gradient(ellipse at 50% 42%,#fffaf0 0%,#f8edcf 70%,#efdeb2 100%);
+  box-shadow:inset 0 0 0 2px rgba(184,146,58,.9),inset 0 0 0 5px rgba(255,250,230,.75),inset 0 0 22px rgba(150,105,35,.28)}
+.df-in img{position:absolute;left:3%;bottom:2%;width:94%;height:auto;display:block;mix-blend-mode:multiply}
+.df-lil{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .datebox{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:1em auto .2em;max-width:340px;color:var(--ink)}
 .datebox .side{font:600 14px/1.2 var(--font-caps);letter-spacing:.26em;text-transform:uppercase;color:var(--gold-4);padding:9px 0;border-top:1.5px solid var(--gold-3);border-bottom:1.5px solid var(--gold-3)}
 .datebox .day{font:600 58px/1 var(--font-caps);padding:0 4px}
@@ -290,7 +307,8 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:60;pointer-event
 .dress-text{margin:.4em auto 0;max-width:360px;font:500 clamp(20px,5.3vw,23px)/1.45 var(--font-body)}
 .dress-text b{font-weight:600}
 
-.footer{position:relative;z-index:3;margin-top:58px;text-align:center}
+.footer{position:relative;z-index:5;margin-top:58px;text-align:center;padding:18px 6px 22px;border-radius:50%/60%;
+  background:radial-gradient(ellipse at 50% 50%,rgba(246,233,200,.9) 0%,rgba(246,233,200,.7) 45%,rgba(246,233,200,0) 72%)}
 .footer p{margin:.2em 0;font:italic 500 21px/1.35 var(--font-body)}
 .footer .sign{font:400 clamp(48px,14vw,62px)/1.1 var(--font-script);margin-top:.1em;padding:.05em .1em}
 
@@ -323,8 +341,7 @@ body.og .hint,body.og .guestline,body.og .demo-tag,body.og .tw,body.og .seal-btn
 body.og .seal-btn{animation:none}
 
 @media (prefers-reduced-motion:reduce){
-  .lily,.dress,.gold-text,.btn-gold::after,.seal-btn,.seal-btn::after,.tw{animation:none!important}
-  .bf .wl,.bf .wr{animation-duration:1.4s}
+  .lily,.df,.corner-vine svg,.gold-text,.btn-gold::after,.seal-btn,.seal-btn::after,.tw{animation:none!important}
   .panel{transition:opacity .3s;transform:none}
 }
 </style>
@@ -346,6 +363,33 @@ body.og .seal-btn{animation:none}
     <radialGradient id="gWaxIn" cx=".62" cy=".72" r=".85">
       <stop offset="0" stop-color="#8a6420" stop-opacity=".55"/><stop offset="1" stop-color="#8a6420" stop-opacity="0"/>
     </radialGradient>
+    <linearGradient id="gTepal" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#d9d68a"/><stop offset=".16" stop-color="#f1eec0"/><stop offset=".42" stop-color="#fffdf3"/><stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="gTepalSide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#b09650" stop-opacity=".34"/><stop offset=".24" stop-color="#b09650" stop-opacity="0"/><stop offset=".76" stop-color="#b09650" stop-opacity="0"/><stop offset="1" stop-color="#b09650" stop-opacity=".34"/>
+    </linearGradient>
+    <linearGradient id="gThroat" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#d4b240" stop-opacity=".8"/><stop offset=".3" stop-color="#e3cf72" stop-opacity=".32"/><stop offset=".55" stop-color="#e3cf72" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="gThroatR" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#d6ae38" stop-opacity=".95"/><stop offset=".6" stop-color="#e2c564" stop-opacity=".5"/><stop offset="1" stop-color="#e8d98a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gAnther" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eaa84a"/><stop offset=".5" stop-color="#b4601c"/><stop offset="1" stop-color="#7f3b10"/>
+    </linearGradient>
+    <linearGradient id="gLeafC" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a9bdac"/><stop offset=".5" stop-color="#82998a"/><stop offset="1" stop-color="#5f7667"/>
+    </linearGradient>
+    <linearGradient id="gBudR" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#8fa68f"/><stop offset=".4" stop-color="#d3dfbf"/><stop offset="1" stop-color="#fffbe8"/>
+    </linearGradient>
+    <linearGradient id="gGoldLeaf1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0b5"/><stop offset=".5" stop-color="#e2b84e"/><stop offset="1" stop-color="#b07d1c"/>
+    </linearGradient>
+    <linearGradient id="gGoldLeaf2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6d478"/><stop offset=".5" stop-color="#d09a2e"/><stop offset="1" stop-color="#94621a"/>
+    </linearGradient>
     <linearGradient id="gPetal" x1="0" y1="1" x2="0" y2="0">
       <stop offset="0" stop-color="#eecb68"/><stop offset=".2" stop-color="#f8e8b8"/><stop offset=".55" stop-color="#fffaf0"/><stop offset="1" stop-color="#fffdf8"/>
     </linearGradient>
@@ -443,6 +487,9 @@ body.og .seal-btn{animation:none}
   <article class="parchment" id="parchment" aria-label="Invitación a los XV años">
     <div class="rod rod-top" aria-hidden="true"></div>
     <div class="bg-lilies" aria-hidden="true" id="bgLilies"></div>
+    <div id="floaters" aria-hidden="true"></div>
+    <div class="corner-vine cv-tr" id="cvTR" aria-hidden="true"></div>
+    <div class="corner-vine cv-bl" id="cvBL" aria-hidden="true"></div>
 
     <div class="panels">
       <!-- Portada -->
@@ -451,7 +498,7 @@ body.og .seal-btn{animation:none}
         <span data-mono class="mono-hero"></span>
         <p class="t-mis gold-text" data-bind="title">Mis XV Años</p>
         <p class="t-name gold-text" data-bind="name">Valeria Zoe</p>
-        <div id="dressSlot" class="dress" aria-label="Ilustración del vestido en tonos beige y dorado" role="img"></div>
+        <div id="dressSlot" class="dress"></div>
         <div class="datebox" aria-label="Fecha del evento">
           <div class="side" id="dWeek">Domingo</div>
           <div class="day gold-text" id="dDay">29</div>
@@ -536,7 +583,6 @@ body.og .seal-btn{animation:none}
   </article>
   <div class="rod" id="movingRod" aria-hidden="true"></div>
 </div>
-<div id="butterflies" aria-hidden="true"></div>
 
 <!-- Ventana: confirmar asistencia -->
 <dialog id="rsvpDlg" aria-labelledby="dlgTitle">
@@ -673,47 +719,70 @@ function monogramSVG() {
   </svg>`;
 }
 
-/* ============ Lirios ============ */
-const PETAL = 'M0,0C-15,-9 -22,-36 -6,-60C-3,-64 3,-64 6,-60C22,-36 15,-9 0,0Z';
-function flower(cx, cy, rot, sc, mono = false) {
-  const fill = mono ? 'url(#gGold)' : 'url(#gPetal)';
-  let s = `<g transform="translate(${cx} ${cy}) rotate(${rot}) scale(${sc} ${(sc * 0.93).toFixed(3)})">`;
-  [0, 120, 240].forEach((a) => { s += `<g transform="rotate(${a})"><path d="${PETAL}" fill="${fill}" stroke="#c9a24a" stroke-width="1" stroke-opacity=".85"/><path d="${PETAL}" fill="url(#gPetalShade)"/><path d="M0,-6V-50" stroke="#d9b45a" stroke-width=".8" opacity=".75"/></g>`; });
-  [60, 180, 300].forEach((a) => { s += `<g transform="rotate(${a}) scale(.97)"><path d="${PETAL}" fill="${fill}" stroke="#c9a24a" stroke-width="1" stroke-opacity=".85"/><path d="${PETAL}" fill="url(#gPetalShade)"/><path d="M0,-6V-52" stroke="#d9b45a" stroke-width=".8" opacity=".75"/>${mono ? '' : '<circle cx="-4" cy="-18" r="1.1" fill="#b8863a"/><circle cx="4" cy="-24" r="1" fill="#b8863a"/><circle cx="-2" cy="-31" r=".9" fill="#b8863a"/><circle cx="5" cy="-14" r=".9" fill="#b8863a"/>'}</g>`; });
-  s += `<circle r="8" fill="#efce6a" opacity=".9"/>`;
-  [-70, -35, 5, 40, 75, 110].forEach((a, i) => {
-    const len = 24 + (i % 3) * 3, r = (a * Math.PI) / 180;
-    const x = Math.cos(r) * len, y = Math.sin(r) * len;
-    s += `<path d="M0,0 L${x.toFixed(1)},${y.toFixed(1)}" stroke="#b8923a" stroke-width="1.1"/><ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="2.6" ry="1.5" transform="rotate(${a + 90} ${x.toFixed(1)} ${y.toFixed(1)})" fill="#b9772a"/>`;
+/* ============ Lirios realistas, guías verde cemento, hojas y burbujas ============ */
+const CEM = { dk: '#4f6556', md: '#6f8675', lt: '#9db3a0', pale: '#c4d3c4' }; // verde cemento
+const NS = 'http://www.w3.org/2000/svg';
+const TEPAL_O = 'M0,0C-5,-8 -15,-22 -15,-38C-15,-52 -7,-62 0,-70C7,-62 15,-52 15,-38C15,-22 5,-8 0,0Z';
+const TEPAL_I = 'M0,0C-7,-8 -21,-20 -22,-37C-22,-52 -9,-62 0,-68C9,-62 22,-52 22,-37C21,-20 7,-8 0,0Z';
+const SPOTS = [[-5, -18], [4, -24], [-3, -31], [7, -16], [-8, -27], [2, -38], [-10, -37], [9, -33]];
+function tepal(inner, ang, k) {
+  const d = inner ? TEPAL_I : TEPAL_O;
+  return `<g transform="rotate(${ang}) scale(${k})">
+    <path d="${d}" fill="url(#gTepal)" stroke="#cdb877" stroke-width=".9"/>
+    <path d="${d}" fill="url(#gTepalSide)"/><path d="${d}" fill="url(#gThroat)"/>
+    <path d="M0,-4C1,-20 .6,-44 0,-63" fill="none" stroke="#c4bb7a" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M1.5,-6C2.3,-22 1.9,-44 1,-60" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width=".8"/>
+    <path d="M0,-8C-6,-20 -9,-36 -8,-52M0,-8C6,-20 9,-36 8,-52" fill="none" stroke="#c9c088" stroke-opacity=".5" stroke-width=".6"/>
+    ${inner ? '<path d="M0,-10C-12,-22 -15,-38 -13,-52M0,-10C12,-22 15,-38 13,-52" fill="none" stroke="#c9c088" stroke-opacity=".4" stroke-width=".6"/>' + SPOTS.map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".95" fill="#a9702e" opacity=".55"/>`).join('') : ''}
+    <path d="M-4.5,-61C-1.5,-69 1.5,-69 4.5,-61C1.5,-64 -1.5,-64 -4.5,-61Z" fill="#d6cb8c" opacity=".6"/>
+  </g>`;
+}
+function bloomDef() {
+  let s = '';
+  [0, 120, 240].forEach((a, i) => (s += tepal(false, a + (i - 1) * 3, 1 - (i % 2) * 0.05)));
+  [60, 180, 300].forEach((a, i) => (s += tepal(true, a - (i - 1) * 3, 0.98 + (i % 2) * 0.04)));
+  s += '<circle r="19" fill="url(#gThroatR)"/><circle r="4.5" fill="#b4c070"/>';
+  // estambres: filamentos con anteras color óxido
+  [-80, -42, -4, 34, 72, 110].forEach((a, i) => {
+    const L = 33 + (i % 3) * 4, r = (a * Math.PI) / 180, x = Math.cos(r) * L, y = Math.sin(r) * L;
+    const mx = Math.cos(r) * L * 0.5 - Math.sin(r) * 4, my = Math.sin(r) * L * 0.5 + Math.cos(r) * 4;
+    s += `<path d="M0,0Q${mx.toFixed(1)},${my.toFixed(1)} ${x.toFixed(1)},${y.toFixed(1)}" fill="none" stroke="#ddd6a0" stroke-width="1.5" stroke-linecap="round"/>
+      <g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${a + 90 + (i % 2 ? 14 : -14)})"><ellipse rx="2.6" ry="6.4" fill="url(#gAnther)" stroke="#7f3b10" stroke-width=".35"/><ellipse cx="-.7" cy="-1.5" rx=".7" ry="3.2" fill="#f2c27a" opacity=".6"/></g>`;
   });
-  s += `<path d="M0,0 L-6,-30" stroke="#a98a2c" stroke-width="1.3"/><circle cx="-6" cy="-31" r="2" fill="#cfa43a"/>`;
-  return s + '</g>';
+  // pistilo con estigma de tres lóbulos
+  s += `<path d="M0,0Q-8,-24 -3,-47" fill="none" stroke="#c4cd8a" stroke-width="2.3" stroke-linecap="round"/>
+    <g transform="translate(-3 -48)"><circle cx="-2.4" cy="1" r="2.5" fill="#b5c26a" stroke="#8d9a4b" stroke-width=".4"/><circle cx="2.4" cy="1" r="2.5" fill="#b5c26a" stroke="#8d9a4b" stroke-width=".4"/><circle cy="-2.2" r="2.6" fill="#c3cd7a" stroke="#8d9a4b" stroke-width=".4"/></g>`;
+  return `<g id="bloom">${s}</g>`;
 }
 function bud(cx, cy, rot, sc) {
-  return `<g transform="translate(${cx} ${cy}) rotate(${rot}) scale(${sc})"><path d="M0,0C-9,-10 -10,-32 0,-52C10,-32 9,-10 0,0Z" fill="url(#gBud)" stroke="#a9a766" stroke-width=".9"/><path d="M0,-4V-44" stroke="#c9b86a" stroke-width=".7" opacity=".8"/></g>`;
+  return `<g transform="translate(${cx} ${cy}) rotate(${rot}) scale(${sc})">
+    <path d="M0,0C-10,-10 -11,-34 0,-62C11,-34 10,-10 0,0Z" fill="url(#gBudR)" stroke="#8fa38f" stroke-width=".9"/>
+    <path d="M0,-3C-4,-18 -4,-40 0,-58M0,-3C4,-18 4,-40 0,-58" fill="none" stroke="#7d927f" stroke-opacity=".55" stroke-width=".7"/>
+    <path d="M-3,-14C-5,-28 -3,-42 0,-52" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1"/></g>`;
 }
-const leaf = (d) => `<path d="${d}" fill="url(#gLeaf)" stroke="#6f7040" stroke-width=".8" stroke-opacity=".6"/>`;
+const LANCE = 'M0,0C-9,-12 -10,-42 0,-76C10,-42 9,-12 0,0Z';
+function lance(cx, cy, rot, sc) {
+  return `<g transform="translate(${cx} ${cy}) rotate(${rot}) scale(${sc})"><path d="${LANCE}" fill="url(#gLeafC)" stroke="${CEM.dk}" stroke-width="1"/>
+    <path d="M0,-2C1,-26 .6,-52 0,-72" fill="none" stroke="${CEM.pale}" stroke-width="1.1" stroke-opacity=".9"/>
+    <path d="M-2,-14C-4,-30 -4,-50 -1,-66M2,-14C4,-30 4,-50 1,-66" fill="none" stroke="${CEM.dk}" stroke-opacity=".45" stroke-width=".6"/></g>`;
+}
+const stem = (d, w = 3.6) => `<path d="${d}" fill="none" stroke="${CEM.dk}" stroke-width="${w}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${CEM.lt}" stroke-width="${(w * 0.28).toFixed(2)}" stroke-linecap="round" stroke-opacity=".8" transform="translate(-.7 -.5)"/>`;
+const useBloom = (x, y, rot, sx, sy) => `<use href="#bloom" transform="translate(${x} ${y}) rotate(${rot}) scale(${sx} ${sy ?? sx})"/>`;
+
 function lilyDefs() {
-  const stem = (d) => `<path d="${d}" fill="none" stroke="#8d8c55" stroke-width="3.6" stroke-linecap="round"/>`;
   const A = `<symbol id="lilyA" viewBox="0 0 220 420" overflow="visible">
-    ${leaf('M108,392C78,384 44,352 34,308C66,326 96,354 108,392Z')}
-    ${leaf('M110,360C140,350 174,320 186,282C156,298 126,324 110,360Z')}
-    ${leaf('M104,300C84,292 66,270 62,244C82,256 98,276 104,300Z')}
-    ${stem('M110,420C108,340 92,260 100,168')}
-    ${stem('M104,270C130,262 148,238 152,204')}
-    ${bud(152, 206, 16, 1)}
-    ${flower(98, 138, -8, 1.02)}
+    ${lance(108, 404, -64, 0.95)}${lance(110, 366, 66, 0.9)}${lance(106, 322, -58, 0.72)}${lance(108, 286, 60, 0.6)}
+    ${stem('M110,420C108,340 92,260 100,168')}${stem('M104,270C130,262 148,238 152,204', 3)}
+    ${bud(152, 206, 16, 1)}${bud(84, 214, -20, 0.62)}
+    ${useBloom(98, 138, -8, 0.92, 0.8)}
   </symbol>`;
   const B = `<symbol id="lilyB" viewBox="0 0 220 420" overflow="visible">
-    ${leaf('M112,400C84,392 58,364 52,328C80,342 104,368 112,400Z')}
-    ${leaf('M114,372C144,364 170,336 178,300C150,312 126,336 114,372Z')}
-    ${stem('M112,420C114,350 130,290 150,226')}
-    ${stem('M112,420C108,340 80,272 70,190')}
-    ${flower(150, 196, 14, .86)}
-    ${flower(68, 160, -14, .98)}
-    ${bud(112, 250, -30, .8)}
+    ${lance(112, 404, 62, 0.95)}${lance(114, 372, -64, 0.9)}${lance(112, 330, 56, 0.7)}${lance(112, 300, -52, 0.58)}
+    ${stem('M112,420C114,350 130,290 150,226')}${stem('M112,420C108,340 80,272 70,190')}
+    ${bud(112, 250, -30, 0.8)}
+    ${useBloom(150, 196, 14, 0.78, 0.6)}${useBloom(68, 160, -14, 0.9, 0.76)}
   </symbol>`;
-  $('#lilyDefs').innerHTML = A + B;
+  $('#lilyDefs').innerHTML = bloomDef() + A + B;
 }
 function fillBgLilies() {
   const box = $('#bgLilies');
@@ -721,107 +790,103 @@ function fillBgLilies() {
   box.innerHTML = cfg.map(([c, v, f]) => `<div class="lily ${c} ${f}"><svg viewBox="0 0 220 420"><use href="#lily${v}"/></svg></div>`).join('');
 }
 
-/* ============ Vestido (ilustración digital) ============ */
-function dressSVG() {
-  let s = 12345;
-  const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  const L = (y) => 102 - ((y - 194) / 198) * 88;     // borde izquierdo del vestido a la altura y
-  const R = (y) => 158 + ((y - 194) / 198) * 88;     // borde derecho
-  let sparkles = '';
-  for (let i = 0; i < 78; i++) {
-    const y = 200 + rnd() * 196, x = L(y) + 8 + rnd() * (R(y) - L(y) - 16), r = 1 + rnd() * 2.4;
-    const col = rnd() > 0.45 ? '#fff6cf' : '#d9b45a';
-    sparkles += `<path d="M${x.toFixed(1)},${(y - r * 2).toFixed(1)}L${(x + r * 0.5).toFixed(1)},${(y - r * 0.5).toFixed(1)}L${(x + r * 2).toFixed(1)},${y.toFixed(1)}L${(x + r * 0.5).toFixed(1)},${(y + r * 0.5).toFixed(1)}L${x.toFixed(1)},${(y + r * 2).toFixed(1)}L${(x - r * 0.5).toFixed(1)},${(y + r * 0.5).toFixed(1)}L${(x - r * 2).toFixed(1)},${y.toFixed(1)}L${(x - r * 0.5).toFixed(1)},${(y - r * 0.5).toFixed(1)}Z" fill="${col}" opacity="${(0.55 + rnd() * 0.45).toFixed(2)}"/>`;
+/* ----- guías (enredaderas) verde cemento, nítidas, dibujadas sobre una curva ----- */
+const LEAFV = 'M0,0C-9,-5 -16,-19 0,-38C16,-19 9,-5 0,0Z';
+const CURL = 'M0,0C7,-5 17,-2 17,7C17,15 8,17 5,11C3,6 8,3 10,7';
+function vine(d, { n = 8, max = 1, min = 0.5, side = 1, tend = [], w = 3.4, tilt = 54 } = {}) {
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('d', d); $('#lilyDefs').appendChild(p);
+  const L = p.getTotalLength();
+  const dir = (len) => { const a = p.getPointAtLength(Math.max(0, len - 2)), b = p.getPointAtLength(Math.min(L, len + 2)); return (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI; };
+  let out = stem(d, w), leaves = '', curls = '';
+  for (let i = 0; i < n; i++) {
+    const t = (i + 0.5) / n, pt = p.getPointAtLength(t * L), ang = dir(t * L), sd = side * (i % 2 ? 1 : -1);
+    const sc = max - (max - min) * t;
+    leaves += `<g transform="translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)}) rotate(${(ang + 90 + sd * (tilt + ((i * 13) % 20))).toFixed(1)}) scale(${sc.toFixed(2)})">
+      <path d="${LEAFV}" fill="url(#gLeafC)" stroke="${CEM.dk}" stroke-width="1"/>
+      <path d="M0,-2C.8,-14 .6,-26 0,-35" fill="none" stroke="${CEM.pale}" stroke-width="1.1"/>
+      <path d="M0,-10L-7,-17M0,-10L7,-17M0,-19L-6,-26M0,-19L6,-26" fill="none" stroke="${CEM.dk}" stroke-opacity=".5" stroke-width=".6"/></g>`;
   }
-  let folds = '';
-  [[118, 236, 96, 318, 62, 396], [126, 240, 116, 330, 98, 404], [134, 240, 140, 330, 156, 404], [142, 236, 164, 318, 200, 396], [110, 214, 82, 290, 38, 384], [150, 214, 178, 290, 222, 384]]
-    .forEach(([x1, y1, x2, y2, x3, y3]) => { folds += `<path d="M${x1 + (x3 > x1 ? -4 : 4)},196C${x1},${y1} ${x2},${y2} ${x3},${y3}" fill="none" stroke="#a98038" stroke-opacity=".3" stroke-width="1.3"/><path d="M${x1 + (x3 > x1 ? -2 : 6)},196C${x1 + 3},${y1} ${x2 + 3},${y2} ${x3 + 3},${y3}" fill="none" stroke="#fffaf0" stroke-opacity=".55" stroke-width="1"/>`; });
-  return `<svg viewBox="0 0 260 420" aria-hidden="true">
-    <ellipse cx="130" cy="410" rx="104" ry="6.5" fill="rgba(80,55,15,.28)" filter="url(#fSoft)"/>
-    <!-- percha dorada -->
-    <path d="M130,48V38C130,30 141,28 141,20C141,12 127,10 124,18" fill="none" stroke="url(#gGold)" stroke-width="3.2" stroke-linecap="round"/>
-    <path d="M130,48L66,82C59,86 61,92 69,92H191C199,92 201,86 194,82Z" fill="none" stroke="url(#gGold)" stroke-width="3.2" stroke-linejoin="round"/>
-    <path d="M101,110L77,92M159,110L183,92" stroke="#c9a24a" stroke-width="2" stroke-linecap="round"/>
-    <!-- falda: capa trasera -->
-    <path d="M102,192C96,250 54,318 14,392C58,411 98,401 130,409C162,401 202,411 246,392C206,318 164,250 158,192Z" fill="url(#gSkirt)"/>
-    <!-- capa media de tul -->
-    <path d="M104,194C100,252 64,318 30,388C66,403 100,395 130,402C160,395 194,403 230,388C196,318 160,252 156,194Z" fill="url(#gSkirt2)" opacity=".8"/>
-    <!-- panel frontal con encaje dorado -->
-    <path d="M113,196C111,262 92,332 70,399C100,405 118,397 130,405C142,397 160,405 190,399C168,332 149,262 147,196Z" fill="#e2c068" opacity=".24"/>
-    <path d="M113,196C111,262 92,332 70,399M147,196C149,262 168,332 190,399" fill="none" stroke="#b8923a" stroke-width="1.4" opacity=".75"/>
-    ${folds}
-    <g clip-path="inset(0)">${sparkles}</g>
-    <!-- ribete dorado del dobladillo -->
-    <path d="M14,392C58,411 98,401 130,409C162,401 202,411 246,392" fill="none" stroke="url(#gGold)" stroke-width="3" stroke-linecap="round"/>
-    <path d="M22,386C60,402 100,393 130,401C160,393 200,402 238,386" fill="none" stroke="#fff3c4" stroke-width="1" stroke-opacity=".8" stroke-dasharray="2 5" stroke-linecap="round"/>
-    <!-- corpiño -->
-    <path d="M94,112C102,100 120,100 130,114C140,100 158,100 166,112L158,186C146,192 114,192 102,186Z" fill="url(#gBodice)" stroke="#b8923a" stroke-width="1.3"/>
-    <path d="M97,116C105,106 119,107 128,119M163,116C155,106 141,107 132,119" fill="none" stroke="url(#gGold)" stroke-width="2.2" stroke-linecap="round"/>
-    <g fill="none" stroke="#b8923a" stroke-width="1.1" stroke-linecap="round" opacity=".9">
-      <path d="M108,130C114,138 122,134 126,144C130,154 122,160 114,158"/>
-      <path d="M152,130C146,138 138,134 134,144C130,154 138,160 146,158"/>
-      <path d="M130,128V176"/>
-      <path d="M112,168C118,164 124,168 130,176C136,168 142,164 148,168"/>
-    </g>
-    <g fill="#d9b45a"><circle cx="108" cy="130" r="1.8"/><circle cx="152" cy="130" r="1.8"/><circle cx="114" cy="158" r="1.6"/><circle cx="146" cy="158" r="1.6"/><circle cx="130" cy="128" r="1.8"/></g>
-    <g fill="#fff6cf" opacity=".9"><circle cx="118" cy="146" r="1"/><circle cx="142" cy="146" r="1"/><circle cx="124" cy="166" r="1"/><circle cx="136" cy="166" r="1"/></g>
-    <!-- cinturón dorado con broche de lirio -->
-    <path d="M101,182C114,190 146,190 159,182L158,201C146,209 114,209 102,201Z" fill="url(#gGold)" stroke="#7d5d1a" stroke-width="1"/>
-    <path d="M104,186C116,193 144,193 156,186" fill="none" stroke="#fff3c4" stroke-opacity=".7" stroke-width="1"/>
-    <g transform="translate(130 197) scale(.2)">${flower(0, 0, 0, 1, true)}</g>
+  tend.forEach((t, i) => {
+    const pt = p.getPointAtLength(t * L), ang = dir(t * L), sd = side * (i % 2 ? -1 : 1);
+    curls += `<path d="${CURL}" transform="translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)}) rotate(${(ang + sd * 70).toFixed(1)}) scale(${(sd * 1.1).toFixed(2)} 1.1)" fill="none" stroke="${CEM.md}" stroke-width="1.6" stroke-linecap="round"/>`;
+  });
+  p.remove();
+  return curls + out + leaves;
+}
+function buildCorners() {
+  // Esquina superior derecha
+  $('#cvTR').innerHTML = `<svg viewBox="0 0 270 190" aria-hidden="true">
+    ${vine('M268,-6C248,34 200,32 180,72C160,112 170,150 128,176C112,186 96,184 88,172', { n: 10, max: 1.05, min: 0.5, side: 1, tend: [0.28, 0.6, 0.88] })}
+    ${vine('M224,34C242,64 248,104 238,142', { n: 5, max: 0.82, min: 0.45, side: -1, tend: [0.7], w: 2.8 })}
+    ${vine('M182,70C152,62 126,76 114,100', { n: 4, max: 0.78, min: 0.45, side: 1, tend: [0.8], w: 2.6 })}
+    ${bud(238, 146, 176, 0.62)}${bud(88, 172, -118, 0.55)}${bud(114, 102, -150, 0.5)}
+  </svg>`;
+  // Esquina inferior izquierda
+  $('#cvBL').innerHTML = `<svg viewBox="0 0 300 200" aria-hidden="true">
+    ${vine('M-6,206C24,176 20,134 64,114C108,94 156,110 184,80C198,64 200,44 190,28', { n: 11, max: 1.05, min: 0.5, side: -1, tend: [0.25, 0.55, 0.85] })}
+    ${vine('M36,170C68,174 98,190 110,210', { n: 5, max: 0.82, min: 0.45, side: 1, tend: [0.6], w: 2.8 })}
+    ${vine('M64,114C54,90 62,64 86,50', { n: 4, max: 0.78, min: 0.45, side: -1, tend: [0.7], w: 2.6 })}
+    ${bud(190, 30, 18, 0.62)}${bud(86, 52, -24, 0.55)}
+    ${useBloom(122, 150, -16, 0.56, 0.47)}
   </svg>`;
 }
 
-/* ============ Mariposas doradas ============ */
-const BF_SVG = `<svg viewBox="0 0 100 80" aria-hidden="true">
-  <g class="wl"><path d="M48,36C42,10 14,0 7,14C2,27 22,42 48,40Z" fill="url(#gWing)" stroke="#8a6420" stroke-width="1.2"/>
-    <path d="M48,42C32,43 14,52 18,66C24,77 43,66 48,48Z" fill="url(#gWing)" stroke="#8a6420" stroke-width="1.2"/>
-    <path d="M46,38C36,24 22,14 14,16M46,40C34,38 22,36 12,28M47,44C36,50 28,58 24,64" fill="none" stroke="#8a6420" stroke-width=".8" opacity=".7"/>
-    <circle cx="20" cy="22" r="3" fill="#fff4c4" opacity=".85"/><circle cx="29" cy="34" r="2" fill="#fff4c4" opacity=".8"/><circle cx="27" cy="58" r="2.2" fill="#fff4c4" opacity=".8"/></g>
-  <g class="wr"><path d="M48,36C42,10 14,0 7,14C2,27 22,42 48,40Z" fill="url(#gWing)" stroke="#8a6420" stroke-width="1.2"/>
-    <path d="M48,42C32,43 14,52 18,66C24,77 43,66 48,48Z" fill="url(#gWing)" stroke="#8a6420" stroke-width="1.2"/>
-    <path d="M46,38C36,24 22,14 14,16M46,40C34,38 22,36 12,28M47,44C36,50 28,58 24,64" fill="none" stroke="#8a6420" stroke-width=".8" opacity=".7"/>
-    <circle cx="20" cy="22" r="3" fill="#fff4c4" opacity=".85"/><circle cx="29" cy="34" r="2" fill="#fff4c4" opacity=".8"/><circle cx="27" cy="58" r="2.2" fill="#fff4c4" opacity=".8"/></g>
-  <ellipse cx="50" cy="42" rx="2.3" ry="15" fill="#7d5d1a"/><circle cx="50" cy="26" r="3" fill="#7d5d1a"/>
-  <path d="M49,24C46,15 41,11 37,10M51,24C54,15 59,11 63,10" fill="none" stroke="#7d5d1a" stroke-width="1" stroke-linecap="round"/>
-</svg>`;
-const flyers = [];
-function startButterflies() {
-  const box = $('#butterflies');
-  const defs = [ // [tamaño, cx, cy, ampX, ampY, velocidad, fase, velocidad de aleteo]
-    [38, .50, .42, .22, .13, .42, 0, .45], [28, .38, .58, .20, .12, .55, 1.7, .38],
-    [32, .62, .30, .18, .14, .36, 3.1, .5], [24, .46, .70, .24, .10, .62, 4.4, .34],
-    [28, .58, .52, .20, .16, .48, 5.6, .42],
-  ];
-  defs.forEach((d) => {
-    const el = document.createElement('div');
-    el.className = 'bf'; el.style.width = d[0] + 'px'; el.style.setProperty('--fl', d[7] + 's');
-    el.innerHTML = BF_SVG; box.appendChild(el);
-    flyers.push({ el, w: d[0], cx: d[1], cy: d[2], ax: d[3], ay: d[4], sp: d[5], ph: d[6], rot: 0 });
-  });
-  requestAnimationFrame(() => box.classList.add('on'));
-  if (reduceMotion) { tickButterflies(0); return; }
-  let t0 = performance.now(), last = 0;
-  const loop = (t) => {
-    if (document.hidden) { requestAnimationFrame(loop); return; }
-    tickButterflies((t - t0) / 1000);
-    last = t; requestAnimationFrame(loop);
-  };
+/* ----- vestido: la imagen del vestido dentro de un marco con lirios ----- */
+function dressHTML() {
+  const gl = `
+    ${vine('M8,376C-8,322 12,270 2,216C-6,160 12,100 52,58C82,28 120,12 152,8', { n: 11, max: 0.95, min: 0.5, side: 1, tend: [0.3, 0.7], w: 3 })}
+    ${vine('M332,376C348,322 328,270 338,216C346,160 328,100 288,58C258,28 220,12 188,8', { n: 11, max: 0.95, min: 0.5, side: -1, tend: [0.3, 0.7], w: 3 })}
+    ${bud(20, 250, -8, 0.7)}${bud(322, 238, 10, 0.66)}
+    ${useBloom(44, 352, -22, 0.6, 0.5)}${useBloom(298, 350, 20, 0.58, 0.48)}
+    ${useBloom(170, 6, 0, 0.36, 0.3)}`;
+  return `<div class="df"><div class="df-arch"><div class="df-in"><img src="/dress.jpg" alt="Vestido de gala dorado de la quinceañera" width="736" height="736" decoding="async"></div></div>
+    <svg class="df-lil" viewBox="0 0 340 380" aria-hidden="true">${gl}</svg></div>`;
+}
+
+/* ----- hojas doradas de otoño y burbujas doradas (muy suaves, detrás del texto) ----- */
+const LEAF_SHAPES = [
+  `<path d="M50 4L58 22L72 16L68 34L90 30L78 48L96 58L72 62L74 70L54 66L54 96L46 96L46 66L26 70L28 62L4 58L22 48L10 30L32 34L28 16L42 22Z" fill="url(#GRAD)" stroke="#8a6420" stroke-width="2" stroke-linejoin="round"/><path d="M50 94V30M50 62L28 46M50 62L72 46M50 48L36 30M50 48L64 30" fill="none" stroke="#8a6420" stroke-width="1.6" opacity=".7"/>`,
+  `<path d="M50 97C48 82 46 72 44 63C32 63 24 53 30 47C20 43 22 31 32 31C28 23 36 13 46 19C48 9 56 9 58 19C68 13 76 23 70 31C80 31 82 43 72 47C78 53 70 63 58 63C56 72 54 82 50 97Z" fill="url(#GRAD)" stroke="#8a6420" stroke-width="2" stroke-linejoin="round"/><path d="M50 95V20M50 60L34 48M50 60L66 48M50 42L38 32M50 42L62 32" fill="none" stroke="#8a6420" stroke-width="1.6" opacity=".7"/>`,
+  `<path d="M50 98C46 80 20 66 22 42C24 22 40 10 50 2C60 10 76 22 78 42C80 66 54 80 50 98Z" fill="url(#GRAD)" stroke="#8a6420" stroke-width="2" stroke-linejoin="round"/><path d="M50 98V8M50 70L30 52M50 70L70 52M50 48L34 34M50 48L66 34" fill="none" stroke="#8a6420" stroke-width="1.6" opacity=".7"/>`,
+];
+const floaters = [];
+function startFloaters() {
+  const box = $('#floaters'); if (!box) return;
+  let s = 987;
+  const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const small = innerWidth < 520, nL = small ? 7 : 10, nB = small ? 9 : 13;
+  for (let i = 0; i < nL; i++) {
+    const el = document.createElement('div'), size = 20 + rnd() * 18;
+    el.className = 'fl leaf'; el.style.width = size + 'px';
+    el.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true">${LEAF_SHAPES[i % 3].replace('GRAD', i % 2 ? 'gGoldLeaf2' : 'gGoldLeaf1')}</svg>`;
+    box.appendChild(el);
+    floaters.push({ el, kind: 'leaf', s: size, x0: rnd(), y0: rnd() * 1400, v: 20 + rnd() * 22, amp: 14 + rnd() * 34, fq: 0.5 + rnd() * 0.7, ph: rnd() * 6.3, rs: (rnd() - 0.5) * 24, ff: 0.8 + rnd() * 1.2 });
+  }
+  for (let i = 0; i < nB; i++) {
+    const el = document.createElement('div'), size = 9 + rnd() * 26;
+    el.className = 'fl bub'; el.style.width = el.style.height = size + 'px';
+    box.appendChild(el);
+    floaters.push({ el, kind: 'bub', s: size, x0: rnd(), y0: rnd() * 1400, v: 14 + rnd() * 26, amp: 8 + rnd() * 22, fq: 0.6 + rnd() * 0.8, ph: rnd() * 6.3 });
+  }
+  tickFloaters(0);
+  if (reduceMotion) return;
+  let t = 0, last = performance.now();
+  const loop = (now) => { const dt = Math.min((now - last) / 1000, 0.1); last = now; if (!document.hidden) { t += dt; tickFloaters(t); } requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
 }
-function tickButterflies(t) {
-  const W = innerWidth, H = innerHeight;
-  flyers.forEach((f) => {
-    const p = (tt) => {
-      const a = tt * f.sp + f.ph;
-      return [W * (f.cx + f.ax * Math.sin(a) + 0.05 * Math.sin(a * 2.3)), H * (f.cy + f.ay * Math.sin(a * 1.5 + 1) + 0.03 * Math.cos(a * 3.1))];
-    };
-    const [x, y] = p(t), [x2, y2] = p(t + 0.05);
-    const target = (Math.atan2(y2 - y, x2 - x) * 180) / Math.PI + 90;
-    let diff = ((target - f.rot + 540) % 360) - 180;
-    f.rot += diff * 0.12;
-    f.el.style.transform = `translate(${(x - f.w / 2).toFixed(1)}px,${(y - f.w / 2).toFixed(1)}px) rotate(${f.rot.toFixed(1)}deg)`;
-  });
+function tickFloaters(t) {
+  const W = $('#floaters').clientWidth || 420, H = innerHeight;
+  for (const f of floaters) {
+    const span = H + f.s * 2, x = f.x0 * W + Math.sin(t * f.fq + f.ph) * f.amp - f.s / 2;
+    if (f.kind === 'leaf') {
+      const y = ((f.y0 + t * f.v) % span) - f.s, fl = Math.max(0.3, Math.abs(Math.cos(t * f.ff + f.ph)));
+      f.el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${(Math.sin(t * f.fq * 0.9 + f.ph) * 38 + t * f.rs).toFixed(1)}deg) scaleX(${fl.toFixed(2)})`;
+    } else {
+      const y = H + f.s - ((f.y0 + t * f.v) % span);
+      f.el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
+    }
+  }
 }
 
 /* ============ Destellos (canvas) ============ */
@@ -879,7 +944,7 @@ function bindEvent() {
   ch.href = mapUrl(e.church.name, e.church.address); ch.innerHTML = PIN + 'Ver en Google Maps';
   vn.href = mapUrl(e.venue.name, e.venue.address); vn.innerHTML = PIN + 'Ver en Google Maps';
   $('#dcTitle').textContent = e.dressCode.title; $('#dcText').textContent = e.dressCode.text;
-  $('#dressSlot').innerHTML = dressSVG();
+  $('#dressSlot').innerHTML = dressHTML();
   document.title = `${e.title}, ${e.name}`;
 }
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -1042,7 +1107,7 @@ async function showScroll(instant) {
   }
   document.body.classList.remove('locked');
   sc.classList.add('settled');
-  startButterflies();
+  startFloaters();
   watchPanels();
   $('#stage').hidden = true;
 }
@@ -1054,7 +1119,7 @@ function watchPanels() {
 /* ============ Arranque ============ */
 async function init() {
   try { EVENT = await loadEvent(); } catch (e) { $('#stageMsg').hidden = false; $('#stageMsg').textContent = 'No pudimos cargar la invitación. Inténtalo más tarde.'; $('#hint').hidden = true; return; }
-  lilyDefs(); fillBgLilies(); bindEvent(); fillSeals();
+  lilyDefs(); buildCorners(); fillBgLilies(); bindEvent(); fillSeals();
   $$('.panel').forEach((p) => ['tl', 'tr', 'bl', 'br'].forEach((c) => { const i = document.createElement('i'); i.className = `corner ${c}`; p.appendChild(i); }));
   startCountdown();
   $('#sealBtn').addEventListener('click', openEnvelope);

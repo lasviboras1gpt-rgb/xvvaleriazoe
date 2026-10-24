@@ -1,5 +1,5 @@
 // Servidor local para probar TODO sin Netlify: node dev/server.mjs
-// Variables: PORT (8888), ADMIN_TOKEN (por defecto el de pruebas), DATA_DIR (./.data)
+// Variables: PORT (8888), ADMIN_TOKEN (opcional), DATA_DIR (./.data)
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -8,13 +8,13 @@ import { createApi } from '../src/core.mjs';
 import { createFileStore } from '../src/store-file.mjs';
 import { renderInvitePage } from '../src/page.mjs';
 import { createPush } from '../src/push.mjs';
+import { corsHeaders } from '../src/cors.mjs';
 
-const DEV_TOKEN = 'dev-token-0123456789-abcdefghij';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pub = path.join(root, 'public');
 const port = Number(process.env.PORT || 8888);
 const store = createFileStore(process.env.DATA_DIR || path.join(root, '.data'));
-const api = createApi({ store, adminToken: process.env.ADMIN_TOKEN || DEV_TOKEN, push: createPush({ store, allowInsecure: true }) });
+const api = createApi({ store, adminToken: process.env.ADMIN_TOKEN || undefined, push: createPush({ store, allowInsecure: true }) });
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -31,6 +31,8 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname.startsWith('/api/')) {
+      const cors = corsHeaders(url.pathname);
+      if (req.method === 'OPTIONS') { res.writeHead(204, cors); return res.end(); }
       let body;
       if (!['GET', 'HEAD', 'DELETE'].includes(req.method)) {
         const chunks = [];
@@ -39,7 +41,7 @@ const server = http.createServer(async (req, res) => {
         try {
           body = text ? JSON.parse(text) : {};
         } catch {
-          res.writeHead(400, { 'content-type': 'application/json' });
+          res.writeHead(400, { 'content-type': 'application/json', ...cors });
           return res.end('{"error":"invalid_json"}');
         }
       }
@@ -50,7 +52,7 @@ const server = http.createServer(async (req, res) => {
         body,
         headers: req.headers,
       });
-      res.writeHead(out.status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      res.writeHead(out.status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...cors });
       return res.end(JSON.stringify(out.body));
     }
 
@@ -84,5 +86,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, () => {
-  console.log(`Servidor local: http://localhost:${port}   (clave de administración de pruebas: ${process.env.ADMIN_TOKEN || DEV_TOKEN})`);
+  console.log(`Servidor local: http://localhost:${port}   (${process.env.ADMIN_TOKEN ? 'con clave de administración' : 'sin clave de administración'})`);
 });

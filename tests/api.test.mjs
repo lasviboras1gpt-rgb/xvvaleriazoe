@@ -133,7 +133,11 @@ test('seguridad: el panel exige contraseña y los ids inválidos dan 404', async
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'xv-test-'));
   const sinClave = createApi({ store: createFileStore(dir), adminToken: undefined });
   const r = await sinClave.handle({ method: 'GET', path: '/api/admin/invitations', headers: {} });
-  assert.equal(r.status, 503);
+  assert.equal(r.status, 200); // sin ADMIN_TOKEN el generador no necesita contraseña
+  const c = await sinClave.handle({ method: 'POST', path: '/api/admin/invitations', body: { guest: 'Ana', seats: 2 }, headers: {} });
+  assert.equal(c.status, 201);
+  const pub = await sinClave.handle({ method: 'GET', path: `/api/invitation/${c.body.invitation.id}`, headers: {} });
+  assert.equal(pub.status, 200);
 });
 
 test('validación de datos al crear', async () => {
@@ -189,7 +193,7 @@ test('vista previa de WhatsApp: título, imagen absoluta y nombre del invitado',
   assert.ok(!template.includes('__OG_'));
 });
 
-test('una clave de administración débil (corta) se rechaza: el panel queda desactivado', async () => {
+test('una clave de administración débil (corta) se rechaza: el panel queda desactivado (solo si alguien puso una clave)', async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'xv-test-'));
   const api = createApi({ store: createFileStore(dir), adminToken: 'corta' });
   const r = await api.handle({ method: 'GET', path: '/api/admin/invitations', headers: { authorization: 'Bearer corta' } });

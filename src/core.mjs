@@ -80,7 +80,8 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
   const err = (status, code, extra = {}) => res(status, { error: code, ...extra });
 
   function isAdmin(headers) {
-    if (!adminToken || adminToken.length < MIN_TOKEN_LENGTH) return null; // no configurado o demasiado débil
+    if (!adminToken) return true; // sin clave configurada: el generador funciona sin contraseña
+    if (adminToken.length < MIN_TOKEN_LENGTH) return null; // se puso una clave, pero es demasiado débil
     const auth = headers['authorization'] || '';
     const supplied = auth.startsWith('Bearer ') ? auth.slice(7) : headers['x-admin-password'] || '';
     return crypto.timingSafeEqual(sha(supplied), sha(adminToken));
