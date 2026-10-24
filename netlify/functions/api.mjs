@@ -1,7 +1,6 @@
 // Función de Netlify: toda la API en /api/*
 import { createApi } from '../../src/core.mjs';
 import { createBlobsStore } from '../../src/store-blobs.mjs';
-import { createPush } from '../../src/push.mjs';
 import { corsHeaders } from '../../src/cors.mjs';
 
 export const config = { path: '/api/*' };
@@ -10,7 +9,7 @@ let api;
 const getApi = () => {
   if (!api) {
     const store = createBlobsStore();
-    api = createApi({ store, adminToken: process.env.ADMIN_TOKEN || process.env.ADMIN_PASSWORD, push: createPush({ store, subject: process.env.VAPID_SUBJECT }) });
+    api = createApi({ store, adminToken: process.env.ADMIN_TOKEN || process.env.ADMIN_PASSWORD });
   }
   return api;
 };

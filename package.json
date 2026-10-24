@@ -10,7 +10,9 @@
     "build:preview": "node scripts/build-preview.mjs"
   },
   "dependencies": {
-    "@netlify/blobs": "^11.1.5",
-    "web-push": "^3.6.7"
+    "@netlify/blobs": "^11.1.5"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

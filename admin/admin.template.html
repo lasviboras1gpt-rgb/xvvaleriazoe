@@ -650,7 +650,10 @@ async function connect(newSite, newToken) {
   const r = await jfetch('/api/admin/ping');
   if (r.ok) return { ok: true };
   site = prevSite; token = prevToken;
-  if (r.status === 0) return { error: 'unreachable' };
+  if (r.status === 0) {
+    // ¿el sitio existe pero no tiene la API de administración (o no deja conectarse)?
+    try { await fetch(newSite + '/', { mode: 'no-cors', cache: 'no-store' }); return { error: 'no_api' }; } catch { return { error: 'unreachable' }; }
+  }
   if (r.status === 401) return { error: 'rejected' };
   if (r.status === 503) return { error: 'server_not_ready' };
   return { error: 'not_our_site' };
@@ -667,6 +670,7 @@ $('#frmSite').addEventListener('submit', async (ev) => {
   if (!r.ok) {
     const m = {
       unreachable: 'No se pudo conectar con ese sitio. Revisa la dirección y tu internet.',
+      no_api: 'Ese sitio SÍ existe, pero no tiene activa la parte que guarda invitaciones (las “Functions”). Pasa cuando el proyecto se sube arrastrando la carpeta o como solo página: debe publicarse desde GitHub o con Netlify CLI, con la carpeta netlify/functions incluida. Mira Deploys → Functions en tu sitio de Netlify: debe aparecer “api” e “invite”.',
       not_our_site: 'Esa dirección existe, pero no es tu invitación publicada. Revisa que esté bien escrita.',
       server_not_ready: 'En Netlify hay una variable ADMIN_TOKEN demasiado corta (menos de 20 caracteres). Bórrala y vuelve a publicar: no hace falta ninguna clave.',
       rejected: needToken && t ? 'El sitio no aceptó esa clave. Revisa que sea exactamente el valor de ADMIN_TOKEN que pusiste en Netlify.' : 'Tu sitio tiene una variable ADMIN_TOKEN en Netlify, así que pide clave. Pégala abajo, o borra esa variable en Netlify y vuelve a publicar para no usar contraseña.',

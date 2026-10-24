@@ -51,4 +51,4 @@ node scripts/build-admin.mjs [direccion-del-sitio]
 - Los invitados solo ven su nombre, lugares, mesa y estado. Cada enlace es un código aleatorio de 10 caracteres, muy difícil de adivinar. Una invitación eliminada deja de abrir.
 - La confirmación nunca puede superar los lugares asignados (se valida en el servidor).
 
-> El proyecto conserva código de notificaciones push (sin uso); no afecta nada.
+

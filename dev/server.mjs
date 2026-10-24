@@ -7,14 +7,13 @@ import { fileURLToPath } from 'node:url';
 import { createApi } from '../src/core.mjs';
 import { createFileStore } from '../src/store-file.mjs';
 import { renderInvitePage } from '../src/page.mjs';
-import { createPush } from '../src/push.mjs';
 import { corsHeaders } from '../src/cors.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pub = path.join(root, 'public');
 const port = Number(process.env.PORT || 8888);
 const store = createFileStore(process.env.DATA_DIR || path.join(root, '.data'));
-const api = createApi({ store, adminToken: process.env.ADMIN_TOKEN || undefined, push: createPush({ store, allowInsecure: true }) });
+const api = createApi({ store, adminToken: process.env.ADMIN_TOKEN || undefined });
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
