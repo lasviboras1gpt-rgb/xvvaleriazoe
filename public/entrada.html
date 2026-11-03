@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#4a3612">
+<title>Control de acceso · XV Valeria Zoe</title>
+<style>
+@font-face{font-family:'Cinzel';src:url('/fonts/cinzel-latin-600-normal.woff2') format('woff2');font-weight:600}
+@font-face{font-family:'Great Vibes';src:url('/fonts/great-vibes-latin-400-normal.woff2') format('woff2')}
+:root{--bg:#f4ead0;--card:#fffaf0;--line:#dcc78f;--gold:#b8923a;--gold-d:#7d5d1a;--ink:#3f2f14;--ink2:#7a6234;--ok:#2f6b24;--ok-bg:#e1efd3;--no:#8a3a2a;--no-bg:#f3dcd4;--warn:#8a5d08;--warn-bg:#f8e9bf;
+  --ui:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;--caps:'Cinzel',Georgia,serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100svh;font:17px/1.45 var(--ui);color:var(--ink);background:var(--bg);display:flex;flex-direction:column;align-items:center}
+button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+header{width:100%;background:#4a3612;color:#f6e7bd;padding:14px 16px;text-align:center}
+header b{display:block;font:400 30px/1 'Great Vibes',cursive;color:#f1d98e}
+header small{display:block;margin-top:4px;font:600 11px var(--caps);letter-spacing:.2em;text-transform:uppercase;opacity:.8}
+main{width:100%;max-width:480px;padding:18px 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;box-shadow:0 4px 18px rgba(120,85,25,.12);text-align:center}
+.lbl{font:600 11.5px var(--caps);letter-spacing:.16em;text-transform:uppercase;color:var(--ink2)}
+.guest{margin:.15em 0 .1em;font:400 clamp(38px,11vw,50px)/1.1 'Great Vibes',cursive;color:var(--gold-d);word-break:break-word;padding:.05em .1em}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 4px}
+.fact{padding:10px 6px;border-radius:12px;background:#fbf3dc;border:1px solid var(--line)}
+.fact b{display:block;font:600 30px/1.1 var(--caps);color:var(--gold-d)}
+.fact span{font-size:13px;color:var(--ink2)}
+.tag{display:inline-block;margin-top:10px;padding:5px 14px;border-radius:99px;font-weight:700;font-size:15px}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}.tag.wait{background:var(--warn-bg);color:var(--warn)}.tag.no{background:var(--no-bg);color:var(--no)}
+.bar{margin:14px 0 2px;height:10px;border-radius:99px;background:#eadfbc;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#d9b45a,#4f9a35);transition:width .5s}
+.inside{font-weight:700;font-size:18px}
+.q{margin:20px 0 8px;font:600 12px var(--caps);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.stepper{display:flex;align-items:stretch;height:74px;border:2px solid var(--gold);border-radius:14px;overflow:hidden;background:#fff}
+.stepper button{width:84px;border:0;background:#fbf3dc;font:600 38px var(--caps);color:var(--gold-d);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stepper button:active{background:#efdfa9}.stepper button:disabled{opacity:.35}
+.stepper output{flex:1;display:grid;place-items:center;font:600 42px var(--caps);color:var(--ink);font-variant-numeric:tabular-nums}
+.max{margin:6px 0 0;font-size:14px;color:var(--ink2)}
+.go{display:block;width:100%;margin-top:18px;min-height:64px;border:0;border-radius:14px;font-weight:700;font-size:20px;cursor:pointer;color:#3b2a05;background:linear-gradient(180deg,#f6dc8a,#d3a940);box-shadow:0 3px 8px rgba(110,75,15,.35),inset 0 1px 0 rgba(255,255,255,.55)}
+.go:disabled{opacity:.55}
+.ghost{display:block;margin:14px auto 0;padding:10px 14px;border:0;background:none;color:var(--ink2);text-decoration:underline;font-size:15px;cursor:pointer}
+.err{min-height:1.3em;margin:12px 0 0;color:var(--no);font-weight:700}
+.done{padding:18px 14px;border-radius:14px;background:var(--ok-bg);color:var(--ok);font-weight:700;font-size:20px;line-height:1.35}
+.done big{display:block;font:600 56px/1.1 var(--caps)}
+.warn{margin:14px 0 0;padding:10px 12px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-weight:600;font-size:15px}
+.full{padding:14px;border-radius:12px;background:var(--ok-bg);color:var(--ok);font-weight:700;margin-top:16px}
+.fix{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+.fix .stepper{height:60px}.fix .stepper button{width:66px;font-size:30px}.fix .stepper output{font-size:32px}
+.msg{padding:30px 10px}.msg b{display:block;font:400 34px 'Great Vibes',cursive;color:var(--gold-d);margin-bottom:6px}
+</style>
+</head>
+<body>
+<header><b>Valeria Zoe</b><small>Control de acceso · Mis XV años</small></header>
+<main>
+  <div class="card msg" id="loading">Cargando…</div>
+  <div class="card msg" id="gone" hidden><b>Código no válido</b>Esta invitación no existe o fue eliminada. Pídele al invitado que abra su invitación otra vez, o búscalo en la lista del generador.</div>
+  <div class="card msg" id="neterr" hidden><b>Sin conexión</b>No se pudo cargar. Revisa tu internet y recarga la página.</div>
+
+  <div class="card" id="view" hidden>
+    <div class="lbl">Invitado</div>
+    <div class="guest" id="gName"></div>
+    <span class="tag" id="rsvpTag"></span>
+    <div class="facts">
+      <div class="fact"><b id="fSeats">0</b><span>lugares asignados</span></div>
+      <div class="fact"><b id="fTable">–</b><span>mesa</span></div>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="inside" id="inside"></div>
+
+    <div id="entry">
+      <div class="q">¿Cuántas personas ingresan ahora?</div>
+      <div class="stepper"><button type="button" id="minus" aria-label="Menos">−</button><output id="n" aria-live="polite">1</output><button type="button" id="plus" aria-label="Más">+</button></div>
+      <p class="max" id="max"></p>
+      <div class="warn" id="warn" hidden></div>
+      <button class="go" type="button" id="save">Registrar ingreso</button>
+    </div>
+    <div class="full" id="full" hidden>✔ Ya ingresaron todos los lugares de esta invitación.</div>
+    <p class="err" id="err" role="alert"></p>
+
+    <button class="ghost" type="button" id="fixOpen">Corregir total de ingresados</button>
+    <div class="fix" id="fix" hidden>
+      <div class="q">Total correcto de personas adentro</div>
+      <div class="stepper"><button type="button" id="fminus" aria-label="Menos">−</button><output id="fn">0</output><button type="button" id="fplus" aria-label="Más">+</button></div>
+      <button class="go" type="button" id="fsave" style="min-height:54px;font-size:17px">Guardar total</button>
+    </div>
+  </div>
+
+  <div class="card" id="ok" hidden>
+    <div class="done"><big id="okBig">✔</big><span id="okTxt"></span></div>
+    <button class="go" type="button" id="again">Listo · siguiente invitado</button>
+    <p class="max">Escanea el QR del siguiente invitado con la cámara.</p>
+  </div>
+</main>
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const plural = (n, a, b) => (n === 1 ? a : b);
+const id = decodeURIComponent((location.pathname.match(/\/entrada\/([^/?#]+)/) || [])[1] || new URLSearchParams(location.search).get('id') || '');
+let D = null, n = 1, fn = 0;
+const show = (k) => { for (const x of ['loading', 'gone', 'neterr', 'view', 'ok']) $('#' + x).hidden = x !== k; };
+async function api(method, body) {
+  const r = await fetch(`/api/checkin/${encodeURIComponent(id)}`, { method, cache: 'no-store', headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  let data = null; try { data = await r.json(); } catch {}
+  return { ok: r.ok, status: r.status, data };
+}
+function render() {
+  const left = D.seats - D.attended;
+  $('#gName').textContent = D.guest; $('#fSeats').textContent = D.seats; $('#fTable').textContent = D.table || 'Por asignar';
+  const t = $('#rsvpTag');
+  if (D.rsvp.status === 'confirmed') { t.className = 'tag ok'; t.textContent = `✔ Confirmó ${D.rsvp.count} de ${D.seats}`; }
+  else if (D.rsvp.status === 'declined') { t.className = 'tag no'; t.textContent = 'Avisó que no asistiría'; }
+  else { t.className = 'tag wait'; t.textContent = 'No había confirmado'; }
+  $('#bar').style.width = D.seats ? `${Math.round((D.attended / D.seats) * 100)}%` : '0';
+  $('#inside').textContent = `Ya ingresaron: ${D.attended} de ${D.seats}`;
+  $('#entry').hidden = left <= 0; $('#full').hidden = left > 0;
+  const confLeft = D.rsvp.status === 'confirmed' ? Math.max(0, D.rsvp.count - D.attended) : 0;
+  n = Math.max(1, Math.min(left, confLeft || 1)); setN(n);
+  $('#max').textContent = `Máximo ${left} ${plural(left, 'persona', 'personas')} más (según los lugares asignados).`;
+  const w = $('#warn');
+  if (D.rsvp.status !== 'confirmed') { w.hidden = false; w.textContent = D.rsvp.status === 'declined' ? 'Esta invitación avisó que no asistiría; puedes registrar el ingreso de todos modos.' : 'Esta invitación no confirmó asistencia; puedes registrar el ingreso de todos modos.'; }
+  else if (D.attended + 1 > D.rsvp.count) { w.hidden = false; w.textContent = `Confirmó ${D.rsvp.count}; ya ingresaron ${D.attended}. Lo que registres de más cuenta como no confirmado.`; }
+  else w.hidden = true;
+  fn = D.attended; setF(fn);
+}
+function setN(v) { const left = D.seats - D.attended; n = Math.max(1, Math.min(Math.max(1, left), v)); $('#n').textContent = n; $('#minus').disabled = n <= 1; $('#plus').disabled = n >= left; }
+function setF(v) { fn = Math.max(0, Math.min(D.seats, v)); $('#fn').textContent = fn; $('#fminus').disabled = fn <= 0; $('#fplus').disabled = fn >= D.seats; }
+$('#minus').onclick = () => setN(n - 1); $('#plus').onclick = () => setN(n + 1);
+$('#fminus').onclick = () => setF(fn - 1); $('#fplus').onclick = () => setF(fn + 1);
+$('#fixOpen').onclick = () => { $('#fix').hidden = !$('#fix').hidden; };
+function errText(r) {
+  const c = r.data?.error;
+  return c === 'count_exceeds_seats' ? `No se puede: solo hay ${r.data.seats} ${plural(r.data.seats, 'lugar asignado', 'lugares asignados')} y ya ingresaron ${r.data.attended}.` : r.status === 404 ? 'Esta invitación ya no existe.' : 'No se pudo guardar. Revisa tu internet e inténtalo de nuevo.';
+}
+$('#save').onclick = async () => {
+  $('#err').textContent = ''; $('#save').disabled = true;
+  try {
+    const r = await api('POST', { add: n });
+    if (r.ok) {
+      D = r.data; $('#okBig').textContent = `+${n}`;
+      $('#okTxt').textContent = `Ingresaron ${n} ${plural(n, 'persona', 'personas')} · ${D.guest}. Total adentro: ${D.attended} de ${D.seats}.`;
+      show('ok');
+    } else { $('#err').textContent = errText(r); if (r.data?.attended !== undefined) { D.attended = r.data.attended; render(); } }
+  } catch { $('#err').textContent = errText({ status: 0 }); }
+  $('#save').disabled = false;
+};
+$('#fsave').onclick = async () => {
+  $('#err').textContent = ''; $('#fsave').disabled = true;
+  try {
+    const r = await api('POST', { total: fn });
+    if (r.ok) { D = r.data; $('#fix').hidden = true; render(); $('#err').textContent = ''; }
+    else $('#err').textContent = errText(r);
+  } catch { $('#err').textContent = errText({ status: 0 }); }
+  $('#fsave').disabled = false;
+};
+$('#again').onclick = () => { render(); show('view'); };
+(async () => {
+  if (!id) return show('gone');
+  try {
+    const r = await api('GET');
+    if (r.ok) { D = r.data; render(); show('view'); } else show(r.status === 404 ? 'gone' : 'neterr');
+  } catch { show('neterr'); }
+})();
+})();
+</script>
+</body>
+</html>

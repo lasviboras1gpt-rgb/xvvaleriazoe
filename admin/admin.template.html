@@ -169,7 +169,7 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
   .app{grid-template-columns:1fr}
   .side{flex-direction:row!important;align-items:center;flex-wrap:wrap;gap:8px!important;padding:12px!important;min-height:0}
   .side .brand{margin:0!important;flex:1 1 100%}
-  .nav{flex:1 1 100%;order:2}.nav button{flex:1;justify-content:center;padding:8px 10px;min-height:46px;font-size:14px}.nav .count{margin-left:6px}
+  .nav{flex:1 1 100%;order:2;gap:6px}.nav button{flex:1 1 0;min-width:0;flex-direction:column;justify-content:center;align-items:center;gap:3px;padding:7px 4px;min-height:58px;font-size:12.5px;text-align:center;line-height:1.15}.nav button svg{width:20px;height:20px}.nav .count{margin:0;position:absolute;top:4px;right:6px;min-width:20px;padding:0 6px;font-size:11px}.nav button{position:relative}
   .side .foot{order:3;flex:1 1 100%;margin:0!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:10px!important}
   .pill{padding:6px 10px;font-size:12px}.siteline{flex:0 1 auto;min-width:0}
   .main{padding:0 14px 32px}.top h1{font-size:32px}
@@ -195,6 +195,10 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
       <button type="button" id="navCreate">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/><path d="M19 3v4M17 5h4" /></svg>
         <span>Crear invitación</span>
+      </button>
+      <button type="button" id="navAtt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4Z"/><path d="m9 13 2 2 4-4"/></svg>
+        <span>Asistencia</span><span class="count" id="navAttCount">0</span>
       </button>
     </nav>
     <div class="foot">
@@ -240,6 +244,35 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
         </div>
         <div class="empty" id="empty" hidden></div>
       </div>
+    </section>
+
+    <!-- MENÚ 3: asistencia (control de acceso) -->
+    <section id="viewAtt" hidden aria-labelledby="viewTitle">
+      <div class="stats" aria-label="Resumen de asistencia">
+        <div class="stat s-ok"><div class="lbl">Confirmados</div><div class="num" id="aConf">0</div><div class="sub">personas</div></div>
+        <div class="stat s-blue"><div class="lbl">Han ingresado</div><div class="num" id="aIn">0</div><div class="sub" id="aInSub">&nbsp;</div></div>
+        <div class="stat s-ok"><div class="lbl">Confirmados que ya llegaron</div><div class="num" id="aOk">0</div><div class="sub" id="aOkSub">de 0 confirmados</div><div class="bar"><span id="aBar"></span></div></div>
+        <div class="stat s-wait"><div class="lbl">Faltan por llegar</div><div class="num" id="aPend">0</div><div class="sub">de los confirmados</div></div>
+        <div class="stat s-no"><div class="lbl">Llegaron sin confirmar</div><div class="num" id="aExtra">0</div><div class="sub">personas</div></div>
+      </div>
+      <div class="panel">
+        <div class="toolbar">
+          <input type="search" id="aq" placeholder="Buscar invitado o mesa…" aria-label="Buscar">
+          <select id="aflt" aria-label="Filtrar">
+            <option value="all">Todas</option><option value="conf">Confirmadas</option><option value="in">Ya ingresaron</option>
+            <option value="wait">Confirmadas que faltan</option><option value="extra">Llegaron sin confirmar</option>
+          </select>
+          <button class="btn" id="aCsv" type="button">Exportar a Excel (CSV)</button>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Invitado</th><th>Mesa</th><th>Confirmó</th><th>Ingresaron</th><th></th></tr></thead>
+            <tbody id="aRows"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="aEmpty" hidden></div>
+      </div>
+      <p class="help" style="margin-top:12px">El ingreso se registra cuando escaneas el código QR que aparece al final de cada invitación: se abre una pantalla donde indicas cuántas personas entran (hasta los lugares asignados). Aquí puedes corregir cualquier cifra.</p>
     </section>
 
     <!-- MENÚ 2: creador -->
@@ -299,6 +332,15 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
     <div class="actions"><button class="btn" type="button" id="delNo">Cancelar</button><button class="btn danger" type="button" id="delYes">Sí, eliminar</button></div></div>
 </dialog>
 
+<dialog id="dlgAtt" aria-labelledby="dlgAttT">
+  <div class="dlg"><h3 id="dlgAttT">Corregir ingreso</h3><p class="s" id="attMsg"></p>
+    <div class="field"><label>Personas que ya ingresaron</label>
+      <div class="stepper"><button type="button" id="attMinus" aria-label="Menos">−</button><input id="attVal" type="number" min="0" value="0" inputmode="numeric"><button type="button" id="attPlus" aria-label="Más">+</button></div>
+      <div class="help" id="attHelp"></div></div>
+    <p class="err" id="attErr" role="alert"></p>
+    <div class="actions"><button class="btn" type="button" id="attNo">Cancelar</button><button class="btn gold" type="button" id="attYes">Guardar</button></div></div>
+</dialog>
+
 <dialog id="dlgSite" aria-labelledby="dlgSiteT">
   <form class="dlg" id="frmSite" method="dialog" novalidate>
     <h3 id="dlgSiteT">Conecta tu invitación</h3>
@@ -342,13 +384,16 @@ const previewLink = (id) => `${site}/i/${id}?preview=1`;
 /* ---------- menús ---------- */
 function show(v) {
   view = v;
-  $('#viewList').hidden = v !== 'list'; $('#viewCreate').hidden = v !== 'create';
+  $('#viewList').hidden = v !== 'list'; $('#viewCreate').hidden = v !== 'create'; $('#viewAtt').hidden = v !== 'att';
   $('#navList').setAttribute('aria-current', v === 'list' ? 'page' : 'false');
   $('#navCreate').setAttribute('aria-current', v === 'create' ? 'page' : 'false');
+  $('#navAtt').setAttribute('aria-current', v === 'att' ? 'page' : 'false');
+  if (v === 'att') { $('#viewTitle').firstChild.textContent = 'Asistencia'; $('#viewSub').textContent = 'Quiénes ya llegaron al evento'; renderAtt(); return; }
   if (v === 'list') { $('#viewTitle').firstChild.textContent = 'Invitaciones'; $('#viewSub').textContent = 'Consulta de invitaciones realizadas'; }
   else { $('#viewTitle').firstChild.textContent = editing ? 'Editar invitación' : 'Crear invitación'; $('#viewSub').textContent = editing ? 'Cambia los datos; el enlace sigue siendo el mismo' : 'Generador de invitaciones'; }
 }
 $('#navList').onclick = () => { if (editing) cancelEdit(); show('list'); };
+$('#navAtt').onclick = () => { if (editing) cancelEdit(); show('att'); };
 $('#navCreate').onclick = () => { if (editing) cancelEdit(); resetCreator(); show('create'); $('#fGuest').focus(); };
 
 /* ---------- conexión ---------- */
@@ -369,7 +414,7 @@ function setConn(status) {
 
 /* ---------- estadísticas y tabla ---------- */
 function renderStats() {
-  const s = stats || { generated: 0, opened: 0, confirmed: 0, declined: 0, pending: 0, seatsAssigned: 0, seatsConfirmed: 0 };
+  const s = stats || { generated: 0, opened: 0, confirmed: 0, declined: 0, pending: 0, seatsAssigned: 0, seatsConfirmed: 0, attended: 0 };
   $('#stGen').textContent = s.generated; $('#navCount').textContent = s.generated;
   $('#stGenSub').textContent = `${s.seatsAssigned} ${plural(s.seatsAssigned, 'lugar asignado', 'lugares asignados')}`;
   $('#stOpen').textContent = s.opened; $('#stOpenSub').textContent = s.generated ? `${s.generated - s.opened} sin abrir` : ' ';
@@ -377,6 +422,7 @@ function renderStats() {
   $('#stSeats').textContent = s.seatsConfirmed; $('#stSeatsSub').textContent = `de ${s.seatsAssigned} asignados`;
   $('#stBar').style.width = s.seatsAssigned ? `${Math.round((s.seatsConfirmed / s.seatsAssigned) * 100)}%` : '0';
   $('#stPend').textContent = s.pending; $('#stNo').textContent = s.declined;
+  $('#navAttCount').textContent = s.attended || 0;
 }
 const when = (ts) => {
   if (!ts) return '';
@@ -421,7 +467,7 @@ function renderRows() {
 async function refresh() {
   if (!configured) return;
   const r = await jfetch('/api/admin/invitations');
-  if (r.ok) { invs = r.data.invitations; stats = r.data.stats; lastRefreshOk = true; renderStats(); renderRows(); } else lastRefreshOk = false;
+  if (r.ok) { invs = r.data.invitations; stats = r.data.stats; lastRefreshOk = true; renderStats(); renderRows(); if (view === 'att') renderAtt(); } else lastRefreshOk = false;
 }
 const refreshSoon = () => { clearTimeout(refreshT); refreshT = setTimeout(refresh, 400); };
 
@@ -464,6 +510,68 @@ $('#btnCsv').onclick = () => {
   invs.forEach((i) => rows.push([i.guest, i.seats, i.table, st[i.rsvp.status], i.rsvp.status === 'confirmed' ? i.rsvp.count : 0, i.openCount, link(i.id)]));
   const csv = '﻿' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'invitados-xv-valeria-zoe.csv'; a.click();
+};
+
+/* ---------- asistencia (menú 3) ---------- */
+const attOf = (i) => i.attended || 0;
+const confOf = (i) => (i.rsvp.status === 'confirmed' ? i.rsvp.count : 0);
+function renderAtt() {
+  const s = stats || {};
+  $('#aConf').textContent = s.seatsConfirmed || 0;
+  $('#aIn').textContent = s.attended || 0; $('#aInSub').textContent = s.arrived ? `en ${s.arrived} ${plural(s.arrived, 'invitación', 'invitaciones')}` : ' ';
+  $('#aOk').textContent = s.attendedOfConfirmed || 0; $('#aOkSub').textContent = `de ${s.seatsConfirmed || 0} confirmados`;
+  $('#aBar').style.width = s.seatsConfirmed ? `${Math.round(((s.attendedOfConfirmed || 0) / s.seatsConfirmed) * 100)}%` : '0';
+  $('#aPend').textContent = s.pendingArrival || 0; $('#aExtra').textContent = s.attendedUnconfirmed || 0;
+  const q = $('#aq').value.trim().toLowerCase(), f = $('#aflt').value;
+  const list = invs.filter((i) => {
+    if (q && !(`${i.guest} ${i.table}`.toLowerCase().includes(q))) return false;
+    if (f === 'conf') return i.rsvp.status === 'confirmed';
+    if (f === 'in') return attOf(i) > 0;
+    if (f === 'wait') return confOf(i) > attOf(i);
+    if (f === 'extra') return attOf(i) > confOf(i);
+    return true;
+  }).sort((a, b) => (confOf(b) > 0) - (confOf(a) > 0) || a.guest.localeCompare(b.guest, 'es'));
+  $('#aRows').innerHTML = list.map((i) => {
+    const a = attOf(i), c = confOf(i);
+    const tag = a === 0 ? (c ? '<span class="tag wait">Aún no llega</span>' : '<span class="muted">—</span>')
+      : a >= c && c > 0 ? '<span class="tag ok">✔ Llegaron todos</span>' : c > 0 ? `<span class="tag seen">Faltan ${c - a}</span>` : '<span class="tag no">Sin confirmar</span>';
+    return `<tr data-id="${esc(i.id)}">
+      <td><div class="gname">${esc(i.guest)}</div><div class="muted">${i.seats} ${plural(i.seats, 'lugar asignado', 'lugares asignados')}</div></td>
+      <td class="seatsmesa"><b>${i.table ? esc(i.table) : '–'}</b></td>
+      <td>${statusTag(i)}</td>
+      <td class="seatsmesa"><b>${a}</b> de ${i.seats}<div style="margin-top:6px">${tag}</div>${i.attendedAt ? `<div class="muted">${when(i.attendedAt)}</div>` : ''}</td>
+      <td><div class="rowact"><button class="btn sm" data-act="att" type="button">Corregir</button>
+        <a class="btn sm" href="${esc(site + '/entrada/' + i.id)}" target="_blank" rel="noopener" title="Abre la pantalla que se ve al escanear el QR">Pantalla de acceso</a></div></td></tr>`;
+  }).join('');
+  const em = $('#aEmpty'); em.hidden = list.length > 0;
+  if (!list.length) em.innerHTML = invs.length ? 'Ninguna invitación coincide.' : '<b>Aún no hay invitaciones</b>Cuando crees invitaciones aparecerán aquí.';
+}
+$('#aq').addEventListener('input', renderAtt); $('#aflt').addEventListener('change', renderAtt);
+let attTarget = null;
+const setAtt = (n) => { $('#attVal').value = Math.max(0, Math.min(attTarget.seats, Number(n) || 0)); };
+$('#aRows').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-act="att"]'); if (!b) return;
+  attTarget = invs.find((i) => i.id === b.closest('tr').dataset.id); if (!attTarget) return;
+  $('#attMsg').textContent = `${attTarget.guest} · ${attTarget.seats} ${plural(attTarget.seats, 'lugar asignado', 'lugares asignados')}`;
+  $('#attHelp').textContent = `Máximo ${attTarget.seats}. Úsalo solo para corregir un error de captura.`;
+  $('#attErr').textContent = ''; setAtt(attOf(attTarget)); $('#dlgAtt').showModal();
+});
+$('#attMinus').onclick = () => setAtt(Number($('#attVal').value) - 1); $('#attPlus').onclick = () => setAtt(Number($('#attVal').value) + 1);
+$('#attNo').onclick = () => $('#dlgAtt').close();
+$('#attYes').onclick = async () => {
+  const v = Number($('#attVal').value);
+  if (!Number.isInteger(v) || v < 0 || v > attTarget.seats) { $('#attErr').textContent = `Debe ser un número de 0 a ${attTarget.seats}.`; return; }
+  $('#attYes').disabled = true;
+  const r = await jfetch(`/api/admin/invitations/${attTarget.id}/attendance`, { method: 'POST', body: JSON.stringify({ attended: v }) });
+  $('#attYes').disabled = false;
+  if (!r.ok) { $('#attErr').textContent = 'No se pudo guardar. Inténtalo de nuevo.'; return; }
+  $('#dlgAtt').close(); toast({ type: 'confirm', title: 'Ingreso corregido', text: '' }); refresh();
+};
+$('#aCsv').onclick = () => {
+  const rows = [['Invitado', 'Mesa', 'Lugares asignados', 'Lugares confirmados', 'Personas que ingresaron']];
+  invs.forEach((i) => rows.push([i.guest, i.table, i.seats, confOf(i), attOf(i)]));
+  const csv = '\ufeff' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'asistencia-xv-valeria-zoe.csv'; a.click();
 };
 
 /* ---------- creador ---------- */
@@ -511,7 +619,7 @@ $('#resGo').onclick = () => { resetCreator(); show('list'); };
 $('#resLink').addEventListener('focus', (e) => e.target.select());
 
 /* ---------- actividad en vivo ---------- */
-const EV = { open: ['👀', 'open'], confirm: ['✅', 'confirm'], modify: ['✏️', 'modify'], decline: ['✖', 'decline'] };
+const EV = { open: ['👀', 'open'], confirm: ['✅', 'confirm'], modify: ['✏️', 'modify'], decline: ['✖', 'decline'], checkin: ['🚪', 'confirm'], checkin_fix: ['✏️', 'modify'] };
 function feedItem(e, fresh) {
   const [ic, cls] = EV[e.type] || ['•', 'open'];
   const li = document.createElement('li'); if (fresh) li.className = 'fresh';
@@ -557,6 +665,8 @@ function describeEvent(e) {
       else text = `${e.guest} cambió de ${lugares(e.previousCount)} a ${lugares(e.count)}`;
       return { title: 'Asistencia modificada', text };
     }
+    case 'checkin': return { title: 'Ingreso registrado', text: `${e.guest}: ingresaron ${e.added} ${e.added === 1 ? 'persona' : 'personas'} (${e.attended} de ${e.seats})` };
+    case 'checkin_fix': return { title: 'Ingreso corregido', text: `${e.guest}: ahora ${e.attended} de ${e.seats} adentro` };
     default: return { title: 'Novedad', text: String(e.guest ?? '') };
   }
 }

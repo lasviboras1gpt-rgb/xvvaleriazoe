@@ -22,3 +22,9 @@
   for = "/fonts/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# El QR de cada invitación abre /entrada/<código>: pantalla de control de acceso (misma página para todos)
+[[redirects]]
+  from = "/entrada/*"
+  to = "/entrada.html"
+  status = 200

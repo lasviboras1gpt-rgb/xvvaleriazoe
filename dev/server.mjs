@@ -64,6 +64,7 @@ const server = http.createServer(async (req, res) => {
       return res.end(html);
     }
 
+    if (url.pathname.startsWith('/entrada/')) url.pathname = '/entrada.html';
     let rel = url.pathname.endsWith('/') ? url.pathname + 'index.html' : url.pathname;
     const file = path.normalize(path.join(pub, rel));
     if (!file.startsWith(pub)) {

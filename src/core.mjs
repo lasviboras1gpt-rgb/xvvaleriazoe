@@ -49,6 +49,16 @@ const publicView = (inv) => ({
   rsvp: { status: inv.rsvp.status, count: inv.rsvp.count },
 });
 
+// Vista para la pantalla de control de acceso (la que abre el QR). Solo lo necesario.
+const checkinView = (inv) => ({
+  id: inv.id,
+  guest: inv.guest,
+  seats: inv.seats,
+  table: inv.table,
+  rsvp: { status: inv.rsvp.status, count: inv.rsvp.count },
+  attended: inv.attended || 0,
+});
+
 function computeStats(list) {
   const stats = {
     generated: list.length,
@@ -58,9 +68,21 @@ function computeStats(list) {
     pending: 0,
     seatsAssigned: 0,
     seatsConfirmed: 0,
+    attended: 0, // personas que ya ingresaron (todas)
+    arrived: 0, // invitaciones con al menos una persona adentro
+    attendedOfConfirmed: 0, // de lo confirmado, cuántas personas ya llegaron
+    pendingArrival: 0, // confirmadas que aún no llegan
+    attendedUnconfirmed: 0, // llegaron sin haber confirmado (o más de lo confirmado)
   };
   for (const inv of list) {
     stats.seatsAssigned += inv.seats;
+    const att = inv.attended || 0;
+    const conf = inv.rsvp.status === 'confirmed' ? inv.rsvp.count : 0;
+    stats.attended += att;
+    if (att > 0) stats.arrived++;
+    stats.attendedOfConfirmed += Math.min(att, conf);
+    stats.pendingArrival += Math.max(0, conf - att);
+    stats.attendedUnconfirmed += Math.max(0, att - conf);
     if (inv.openCount > 0) stats.opened++;
     if (inv.rsvp.status === 'confirmed') {
       stats.confirmed++;
@@ -166,6 +188,40 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
     return res(200, publicView(inv));
   }
 
+  // ---------- Control de acceso (QR de la invitación) ----------
+  async function getCheckin(id) {
+    if (!isValidId(id)) return err(404, 'not_found');
+    const inv = await store.getInvitation(id);
+    if (!inv) return err(404, 'not_found');
+    return res(200, checkinView(inv));
+  }
+
+  // body: { add: n } suma personas que entran ahora; { total: n } fija el total (para corregir).
+  // En ambos casos el total nunca puede pasar de los lugares asignados.
+  async function setCheckin(id, body, ctx, { corrected = false } = {}) {
+    if (!isValidId(id)) return err(404, 'not_found');
+    const inv = await store.getInvitation(id);
+    if (!inv) return err(404, 'not_found');
+    const prev = inv.attended || 0;
+    let total;
+    if (body && body.total !== undefined) total = Number(body.total);
+    else if (body && body.attended !== undefined) total = Number(body.attended);
+    else if (body && body.add !== undefined) {
+      const add = Number(body.add);
+      if (!Number.isInteger(add) || add < 1) return err(400, 'count_invalid');
+      total = prev + add;
+    } else return err(400, 'count_invalid');
+    if (!Number.isInteger(total) || total < 0) return err(400, 'count_invalid');
+    if (total > inv.seats) return err(400, 'count_exceeds_seats', { seats: inv.seats, attended: prev });
+    if (total === prev) return res(200, checkinView(inv));
+    inv.attended = total;
+    inv.attendedAt = now();
+    if (!inv.firstEntryAt && total > 0) inv.firstEntryAt = inv.attendedAt;
+    await store.putInvitation(inv.id, inv);
+    await emit(total > prev && !corrected ? 'checkin' : 'checkin_fix', inv, { attended: total, previousAttended: prev, added: total - prev }, ctx);
+    return res(200, checkinView(inv));
+  }
+
   // ---------- Rutas de administración ----------
   async function adminList() {
     const list = await store.listInvitations();
@@ -188,6 +244,8 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
       firstOpenAt: null,
       lastOpenAt: null,
       lastOpenNotifiedAt: 0,
+      attended: 0,
+      attendedAt: null,
       rsvp: { status: 'pending', count: 0, updatedAt: null },
     };
     await store.putInvitation(inv.id, inv);
@@ -201,6 +259,7 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
     const { out, errors } = validateFields(body || {}, { partial: true });
     if (errors.length) return err(400, 'validation', { details: errors });
     Object.assign(inv, out);
+    if ((inv.attended || 0) > inv.seats) inv.attended = inv.seats; // nunca más adentro que lugares asignados
     let warning;
     if (inv.rsvp.status === 'confirmed' && inv.rsvp.count > inv.seats) {
       inv.rsvp.count = inv.seats; // nunca queda confirmado por encima de lo asignado
@@ -232,13 +291,19 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
     method = method.toUpperCase();
     const parts = path.replace(/^\/+|\/+$/g, '').split('/'); // ['api', ...]
     if (parts[0] !== 'api') return err(404, 'not_found');
-    const [, area, id, action] = parts;
+    const [, area, id, action, extra] = parts;
 
     try {
       if (area === 'invitation') {
         if (method === 'GET' && id && !action) return await getInvitation(id);
         if (method === 'POST' && id && action === 'open') return await registerOpen(id, { host: headers.host });
         if (method === 'POST' && id && action === 'rsvp') return await rsvp(id, body, { host: headers.host });
+        return err(405, 'method_not_allowed');
+      }
+
+      if (area === 'checkin') {
+        if (method === 'GET' && id && !action) return await getCheckin(id);
+        if (method === 'POST' && id && !action) return await setCheckin(id, body, { host: headers.host });
         return err(405, 'method_not_allowed');
       }
 
@@ -255,6 +320,8 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
           if (!target) {
             if (method === 'GET') return await adminList();
             if (method === 'POST') return await adminCreate(body);
+          } else if (extra === 'attendance') {
+            if (method === 'POST' || method === 'PUT') return await setCheckin(target, { total: body?.attended }, {}, { corrected: true });
           } else {
             if (method === 'PUT' || method === 'PATCH') return await adminUpdate(target, body);
             if (method === 'DELETE') return await adminDelete(target);

@@ -33,10 +33,17 @@ Menús (barra lateral; en el teléfono, arriba):
 
 **Avisos:** el botón **Actividad** muestra cuando alguien **abre**, **confirma**, **modifica** o **rechaza** (con sonido, insignia y, si lo permites, aviso del navegador). Las novedades llegan **mientras la página esté abierta**; al volver a abrirla te resume lo ocurrido mientras no estabas.
 
-## 3. Cambiar datos del evento
-Edita `public/event.json` (fecha, nombres, direcciones, horarios, código de vestimenta) y vuelve a publicar. Los enlaces de Google Maps se arman solos. El vestido es `public/dress.jpg`.
+## 3. Control de acceso con QR (el día del evento)
 
-## 4. Probar en tu computadora (opcional)
+- Al final de **cada invitación** aparece **“Tu pase de entrada”** con un código QR personal (con nombre, lugares y mesa).
+- Cuando el invitado llega, **escaneas su QR con la cámara** de tu celular: se abre la pantalla **Control de acceso** con su nombre, mesa, lugares asignados y cuántos confirmó. Indicas **cuántas personas ingresan** y pulsas **Registrar ingreso**. Nunca deja pasar de los lugares asignados y permite registrar por partes (si llegan en momentos distintos). Si te equivocas, **Corregir total de ingresados**.
+- En el generador hay un **tercer menú: Asistencia** — confirmados, han ingresado, confirmados que ya llegaron, faltan por llegar y llegaron sin confirmar, con tabla por invitación, corrección y exportación a CSV. Cada ingreso también aparece en **Actividad**.
+- Sin contraseña, igual que el resto: quien tenga el enlace del QR de una invitación puede abrir esa pantalla. Como el QR solo viene dentro de la invitación de cada persona, el riesgo es bajo; si algún día quieres protegerlo, se puede agregar un PIN para la puerta.
+
+## 4. Cambiar datos del evento
+Edita `public/event.json` (fecha, nombres, direcciones, horarios, código de vestimenta) y vuelve a publicar. Los enlaces de Google Maps se arman solos. El vestido es `public/dress.webp` (fondo transparente).
+
+## 5. Probar en tu computadora (opcional)
 ```
 npm install
 npm test                 # pruebas de la API
@@ -45,7 +52,7 @@ node scripts/build-admin.mjs [direccion-del-sitio]
 ```
 `build-admin.mjs` genera `dist/Generador-de-invitaciones.html` (sin contraseña; con la dirección del sitio incrustada si la pasas). Para regenerar la imagen de WhatsApp: con `npm run dev` activo, `node scripts/build-preview.mjs`.
 
-## 5. Seguridad: qué hay y qué no
+## 6. Seguridad: qué hay y qué no
 - **Sin contraseña**, como pediste: el generador conecta directo. El archivo del generador **no** se publica en Netlify (no está en `public/`), así que los invitados no lo encuentran, y la invitación no contiene ningún menú ni código de administración.
 - Lo que implica: la dirección interna de administración (`tu-sitio.netlify.app/api/admin/...`) no está protegida por clave. Nadie la ve ni está enlazada en ningún lado, pero quien la conociera podría ver la lista o crear invitaciones. Si algún día quieres protegerla, agrega en Netlify la variable `ADMIN_TOKEN` (valor largo, ≥ 20 caracteres) y genera el archivo con `--con-clave`, o pega la clave una vez en el generador.
 - Los invitados solo ven su nombre, lugares, mesa y estado. Cada enlace es un código aleatorio de 10 caracteres, muy difícil de adivinar. Una invitación eliminada deja de abrir.

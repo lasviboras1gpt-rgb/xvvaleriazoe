@@ -94,6 +94,7 @@ test('estadísticas del panel', async () => {
   const { stats } = (await call('GET', '/api/admin/invitations', undefined, admin)).body;
   assert.deepEqual(stats, {
     generated: 3, opened: 1, confirmed: 1, declined: 1, pending: 1, seatsAssigned: 9, seatsConfirmed: 3,
+    attended: 0, arrived: 0, attendedOfConfirmed: 0, pendingArrival: 3, attendedUnconfirmed: 0,
   });
 });
 
