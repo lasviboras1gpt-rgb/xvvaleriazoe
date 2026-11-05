@@ -5,6 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createApi } from '../src/core.mjs';
+import { rulesFromEvent } from '../src/rules.mjs';
 import { createFileStore } from '../src/store-file.mjs';
 import { renderInvitePage } from '../src/page.mjs';
 import { corsHeaders } from '../src/cors.mjs';
@@ -13,7 +14,14 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pub = path.join(root, 'public');
 const port = Number(process.env.PORT || 8888);
 const store = createFileStore(process.env.DATA_DIR || path.join(root, '.data'));
-const api = createApi({ store, adminToken: process.env.ADMIN_TOKEN || undefined });
+const eventJson = JSON.parse(await fs.readFile(path.join(pub, 'event.json'), 'utf8'));
+// RSVP_UNTIL / VIEW_UNTIL (ISO) permiten probar las fechas límite sin esperar.
+const rules = rulesFromEvent({
+  ...eventJson,
+  ...(process.env.RSVP_UNTIL ? { rsvpDeadlineISO: process.env.RSVP_UNTIL } : {}),
+  ...(process.env.VIEW_UNTIL ? { viewUntilISO: process.env.VIEW_UNTIL } : {}),
+});
+const api = createApi({ store, adminToken: process.env.ADMIN_TOKEN || undefined, rules });
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',

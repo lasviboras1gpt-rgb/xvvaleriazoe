@@ -3,7 +3,10 @@
   "title": "Mis XV años",
   "ceremonyISO": "2026-11-29T17:00:00-06:00",
   "timezoneLabel": "Hora de la Ciudad de México",
-  "parents": ["Jannet Cristina Guerrero Castro", "José Ángel Gpe Martínez Lopez"],
+  "parents": [
+    "Jannet Cristina Guerrero Castro",
+    "José Ángel Gpe Martínez Lopez"
+  ],
   "godmother": "Ana Karen Catarino Castro",
   "church": {
     "name": "Parroquia Niño Jesús Milagroso",
@@ -18,5 +21,11 @@
   "dressCode": {
     "title": "Código de vestimenta",
     "text": "Etiqueta formal. Será una noche elegante y te pedimos vestir en consecuencia. Para que la quinceañera luzca en su día, te agradecemos evitar los tonos beige, dorado y blanco."
+  },
+  "rsvpDeadlineISO": "2026-11-20T23:59:59-06:00",
+  "viewUntilISO": "2026-12-02T23:59:59-06:00",
+  "tables": {
+    "count": 15,
+    "capacity": 12
   }
 }

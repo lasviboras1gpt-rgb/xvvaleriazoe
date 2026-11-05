@@ -113,7 +113,7 @@ code.url{display:block;padding:7px 9px;border-radius:7px;background:var(--bg);bo
 .card p.s{margin:0 0 18px;color:var(--ink2)}
 .field{margin:16px 0}
 .field label{display:block;margin-bottom:6px;font:600 11.5px var(--caps);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
-.field input[type=text]{width:100%;height:50px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg);font-size:18px}
+.field input[type=text],.field select{width:100%;height:50px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:18px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media (max-width:560px){.two{grid-template-columns:1fr}}
 .stepper{display:flex;align-items:center;gap:0;height:50px;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--bg)}
@@ -163,6 +163,37 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
 .toast.out{opacity:0;transform:translateX(30px);transition:all .4s}
 @keyframes tin{from{opacity:0;transform:translateX(40px)}}
 
+/* ---------- mapa de mesas ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;padding:12px 14px;border-bottom:1px solid var(--line2);background:var(--card2);font-size:13px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sd{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box;background:transparent}
+.sd.in{background:var(--ok);border-color:var(--ok)}
+.sd.conf{background:var(--ok-bg);border-color:var(--ok)}
+.sd.pend{background:var(--warn-bg);border-color:#d9a02a}
+.sd.no{background:var(--no-bg);border-color:var(--no);border-style:dashed}
+.sd.rel{background:transparent;border-color:var(--no);border-style:dashed}
+.sd.free{border-style:dotted;border-color:var(--ink2);opacity:.7}
+.mapscroll{overflow-x:auto;padding:18px 14px 22px}
+.floor{--tw:104px;display:grid;grid-template-columns:repeat(5,var(--tw));grid-template-rows:repeat(7,var(--tw));gap:16px;justify-content:center;width:max-content;margin:0 auto}
+.dance{grid-column:2/5;grid-row:2/7;display:grid;place-items:center;border:2px dashed var(--line);border-radius:18px;font:600 15px var(--caps);letter-spacing:.3em;color:var(--ink2);background:repeating-linear-gradient(45deg,transparent 0 14px,rgba(184,146,58,.07) 14px 28px);text-align:center;padding:10px}
+.tbl{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);padding:0;border:0;background:none;cursor:pointer;font:inherit;color:inherit;border-radius:12px;-webkit-tap-highlight-color:transparent}
+.tbl:hover .tcore,.tbl:focus-visible .tcore{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,146,58,.35)}
+.tbl:focus-visible{outline:none}
+.tbl .tcore{grid-column:2/5;grid-row:2/5;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid var(--line);border-radius:8px;background:var(--card);line-height:1.15;min-width:0}
+.tbl.full .tcore{background:var(--ok-bg);border-color:var(--ok)}
+.tbl.over .tcore{background:var(--no-bg);border-color:var(--no)}
+.tcore b{font:600 13px var(--caps);color:var(--gold-d);letter-spacing:.02em}
+.tcore small{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.tbl .sd{place-self:center;width:15px;height:15px}
+.tbl.main{grid-column:3;grid-row:1}
+.tbl.main .tcore b{font-size:9.5px;letter-spacing:0}
+.hint{display:none;padding:0 14px 12px;font-size:12.5px;color:var(--ink2)}
+.glist{list-style:none;margin:0 0 4px;padding:0;max-height:46vh;overflow:auto}
+.glist li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2)}
+.glist .gn{font-weight:700}.glist .gm{font-size:13px;color:var(--ink2)}
+.notable{list-style:none;margin:0;padding:0}
+.notable li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line2)}
+
 /* ---------- teléfono (va al final para ganar a las reglas anteriores) ---------- */
 @media (max-width:820px){
   .side{position:static;height:auto}
@@ -180,6 +211,7 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
   .linkcell{min-width:0;max-width:none}.rowact{justify-content:flex-start;gap:6px;padding-top:4px}
   .iconbtn{border-color:var(--line);width:42px;height:42px}
   .toolbar input[type=search]{flex:1 1 100%}
+  .hint{display:block}
 }
 </style>
 </head>
@@ -199,6 +231,10 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
       <button type="button" id="navAtt">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4Z"/><path d="m9 13 2 2 4-4"/></svg>
         <span>Asistencia</span><span class="count" id="navAttCount">0</span>
+      </button>
+      <button type="button" id="navMap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Mesas</span>
       </button>
     </nav>
     <div class="foot">
@@ -229,11 +265,12 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
       </div>
       <div class="panel">
         <div class="toolbar">
-          <input type="search" id="q" placeholder="Buscar invitado, mesa o enlace…" aria-label="Buscar">
+          <input type="search" id="q" placeholder="Buscar invitado, mesa (ej. 7) o enlace…" aria-label="Buscar">
           <select id="flt" aria-label="Filtrar por estado">
-            <option value="all">Todas</option><option value="confirmed">Confirmadas</option><option value="pending">Sin responder</option>
-            <option value="declined">No asistirán</option><option value="unopened">Sin abrir</option>
+            <option value="all">Todos los estados</option><option value="confirmed">Confirmadas</option><option value="pending">Sin responder</option>
+            <option value="declined">No asistirán</option><option value="unopened">Sin abrir</option><option value="opened">Ya abiertas</option>
           </select>
+          <select id="tflt" aria-label="Filtrar por mesa"><option value="all">Todas las mesas</option></select>
           <button class="btn" id="btnCsv" type="button">Exportar a Excel (CSV)</button>
         </div>
         <div class="tablewrap">
@@ -253,15 +290,15 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
         <div class="stat s-blue"><div class="lbl">Han ingresado</div><div class="num" id="aIn">0</div><div class="sub" id="aInSub">&nbsp;</div></div>
         <div class="stat s-ok"><div class="lbl">Confirmados que ya llegaron</div><div class="num" id="aOk">0</div><div class="sub" id="aOkSub">de 0 confirmados</div><div class="bar"><span id="aBar"></span></div></div>
         <div class="stat s-wait"><div class="lbl">Faltan por llegar</div><div class="num" id="aPend">0</div><div class="sub">de los confirmados</div></div>
-        <div class="stat s-no"><div class="lbl">Llegaron sin confirmar</div><div class="num" id="aExtra">0</div><div class="sub">personas</div></div>
       </div>
       <div class="panel">
         <div class="toolbar">
-          <input type="search" id="aq" placeholder="Buscar invitado o mesa…" aria-label="Buscar">
-          <select id="aflt" aria-label="Filtrar">
+          <input type="search" id="aq" placeholder="Buscar invitado o mesa (ej. 7)…" aria-label="Buscar">
+          <select id="aflt" aria-label="Filtrar por asistencia">
             <option value="all">Todas</option><option value="conf">Confirmadas</option><option value="in">Ya ingresaron</option>
-            <option value="wait">Confirmadas que faltan</option><option value="extra">Llegaron sin confirmar</option>
+            <option value="wait">Confirmadas que faltan</option><option value="unconf">Sin confirmar</option>
           </select>
+          <select id="atflt" aria-label="Filtrar por mesa"><option value="all">Todas las mesas</option></select>
           <button class="btn" id="aCsv" type="button">Exportar a Excel (CSV)</button>
         </div>
         <div class="tablewrap">
@@ -272,7 +309,28 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
         </div>
         <div class="empty" id="aEmpty" hidden></div>
       </div>
-      <p class="help" style="margin-top:12px">El ingreso se registra cuando escaneas el código QR que aparece al final de cada invitación: se abre una pantalla donde indicas cuántas personas entran (hasta los lugares asignados). Aquí puedes corregir cualquier cifra.</p>
+      <p class="help" style="margin-top:12px">El ingreso se registra cuando escaneas el código QR que aparece al final de cada invitación: se abre una pantalla donde indicas cuántas personas entran. El límite son los lugares que el invitado CONFIRMÓ (no los asignados): si confirmó 5 de 10, solo pueden entrar 5. Aquí puedes corregir cualquier cifra.</p>
+    </section>
+
+    <!-- MENÚ 4: mapa de mesas -->
+    <section id="viewMap" hidden aria-labelledby="viewTitle">
+      <div class="stats" aria-label="Resumen de mesas">
+        <div class="stat"><div class="lbl">Lugares en mesas</div><div class="num" id="mUsed">0</div><div class="sub" id="mUsedSub">&nbsp;</div><div class="bar"><span id="mBar"></span></div></div>
+        <div class="stat s-ok"><div class="lbl">Mesas completas</div><div class="num" id="mFull">0</div><div class="sub" id="mFullSub">&nbsp;</div></div>
+        <div class="stat s-wait"><div class="lbl">Invitaciones sin mesa</div><div class="num" id="mNone">0</div><div class="sub" id="mNoneSub">&nbsp;</div></div>
+      </div>
+      <div class="panel">
+        <div class="legend" aria-label="Significado de los colores">
+          <span><i class="sd in"></i>Ya ingresó</span><span><i class="sd conf"></i>Confirmó</span><span><i class="sd pend"></i>Sin responder</span>
+          <span><i class="sd no"></i>No asistirá</span><span><i class="sd rel"></i>Lugar liberado</span><span><i class="sd free"></i>Libre</span>
+        </div>
+        <p class="hint">Desliza el mapa hacia los lados para verlo completo. Toca una mesa para ver quién está en ella.</p>
+        <div class="mapscroll"><div class="floor" id="floor" role="group" aria-label="Mapa de mesas"></div></div>
+      </div>
+      <div class="panel" id="noTablePanel" style="margin-top:14px" hidden>
+        <div class="toolbar"><b>Invitaciones sin mesa asignada</b><span class="muted" style="color:var(--ink2);font-size:13px">Toca “Asignar mesa” para elegir una.</span></div>
+        <ul class="notable" id="noTable"></ul>
+      </div>
     </section>
 
     <!-- MENÚ 2: creador -->
@@ -286,9 +344,10 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
           <div class="field"><label for="fSeats">Lugares asignados</label>
             <div class="stepper"><button type="button" id="seatsMinus" aria-label="Menos lugares">−</button><input id="fSeats" type="number" min="1" max="20" value="2" inputmode="numeric"><button type="button" id="seatsPlus" aria-label="Más lugares">+</button></div>
           </div>
-          <div class="field"><label for="fTable">Mesa asignada</label><input type="text" id="fTable" maxlength="20" autocomplete="off" placeholder="Ej. 7"></div>
+          <div class="field"><label for="fTable">Mesa asignada</label><select id="fTable"><option value="">Sin mesa (por asignar)</option></select></div>
         </div>
         <div class="help" id="fHelp">El invitado podrá confirmar esa cantidad de lugares o menos.</div>
+        <div class="help" id="fTblHelp"></div>
         <p class="err" id="fErr" role="alert"></p>
         <div class="actions">
           <button class="btn gold big" type="submit" id="fSave">Generar invitación</button>
@@ -332,6 +391,12 @@ dialog::backdrop{background:rgba(40,28,6,.55);backdrop-filter:blur(2px)}
     <div class="actions"><button class="btn" type="button" id="delNo">Cancelar</button><button class="btn danger" type="button" id="delYes">Sí, eliminar</button></div></div>
 </dialog>
 
+<dialog id="dlgTbl" aria-labelledby="dlgTblT">
+  <div class="dlg"><h3 id="dlgTblT">Mesa</h3><p class="s" id="tblMsg"></p>
+    <ul class="glist" id="tblList"></ul>
+    <div class="actions"><button class="btn gold" type="button" id="tblClose">Cerrar</button></div></div>
+</dialog>
+
 <dialog id="dlgAtt" aria-labelledby="dlgAttT">
   <div class="dlg"><h3 id="dlgAttT">Corregir ingreso</h3><p class="s" id="attMsg"></p>
     <div class="field"><label>Personas que ya ingresaron</label>
@@ -364,7 +429,7 @@ const EMBED = { site: "{{SITE}}", token: "{{TOKEN}}" };
 const LS = { get(k) { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
 const hasEmbedded = (v) => v && !/^\{\{.*\}\}$/.test(v);
 
-let needToken = false, site = '', token = '', configured = false, invs = [], stats = null, editing = null, cursor = '';
+let needToken = false, site = '', token = '', configured = false, invs = [], stats = null, cfg = { tableCount: 15, tableCapacity: 12, mainTable: 'Principal' }, editing = null, cursor = '';
 let feedKnown = new Set(), firstFeed = true, refreshT = null, lastRefreshOk = false, unread = 0, view = 'list', created = null, connStatus = 'unconfigured';
 
 /* Llamada a la API del sitio publicado (rutas de administración, con la clave en la cabecera) */
@@ -384,7 +449,9 @@ const previewLink = (id) => `${site}/i/${id}?preview=1`;
 /* ---------- menús ---------- */
 function show(v) {
   view = v;
-  $('#viewList').hidden = v !== 'list'; $('#viewCreate').hidden = v !== 'create'; $('#viewAtt').hidden = v !== 'att';
+  $('#viewList').hidden = v !== 'list'; $('#viewCreate').hidden = v !== 'create'; $('#viewAtt').hidden = v !== 'att'; $('#viewMap').hidden = v !== 'map';
+  $('#navMap').setAttribute('aria-current', v === 'map' ? 'page' : 'false');
+  if (v === 'map') { $('#viewTitle').firstChild.textContent = 'Mesas'; $('#viewSub').textContent = 'Mapa de mesas asignadas · 12 lugares por mesa'; renderMap(); return; }
   $('#navList').setAttribute('aria-current', v === 'list' ? 'page' : 'false');
   $('#navCreate').setAttribute('aria-current', v === 'create' ? 'page' : 'false');
   $('#navAtt').setAttribute('aria-current', v === 'att' ? 'page' : 'false');
@@ -394,6 +461,7 @@ function show(v) {
 }
 $('#navList').onclick = () => { if (editing) cancelEdit(); show('list'); };
 $('#navAtt').onclick = () => { if (editing) cancelEdit(); show('att'); };
+$('#navMap').onclick = () => { if (editing) cancelEdit(); show('map'); };
 $('#navCreate').onclick = () => { if (editing) cancelEdit(); resetCreator(); show('create'); $('#fGuest').focus(); };
 
 /* ---------- conexión ---------- */
@@ -438,10 +506,52 @@ const I = {
   edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
   del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
 };
+/* Búsqueda sin acentos. "7" o "mesa 7" → solo la mesa 7 (no la 17); "principal"; "sin mesa"; o parte del nombre / enlace. */
+const norm = (t) => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+function matchQuery(i, raw) {
+  const q = norm(raw).replace(/\s+/g, ' ');
+  if (!q) return true;
+  const tbl = norm(i.table);
+  const num = q.match(/^(?:mesa ?)?(\d{1,3})$/);
+  if (num) return tbl === num[1] || norm(i.guest).includes(q);
+  if (/^(?:mesa )?principal$/.test(q)) return tbl === 'principal';
+  if (/^sin mesa$/.test(q)) return !i.table;
+  return `${norm(i.guest)} ${i.table ? 'mesa ' + tbl : ''} ${i.id}`.includes(q);
+}
+const matchTable = (i, v) => v === 'all' || (v === 'none' ? !i.table : i.table === v);
+/* Opciones de mesa: Principal y 1..N. withAll=true agrega "Todas" y "Sin mesa" (para filtros). */
+function tableChoices() { return [cfg.mainTable, ...Array.from({ length: cfg.tableCount }, (_, k) => String(k + 1))]; }
+const tableLabel = (t) => (t === cfg.mainTable ? 'Mesa Principal' : `Mesa ${t}`);
+const usedIn = (t, exceptId) => invs.filter((i) => i.table === t && i.id !== exceptId).reduce((n, i) => n + i.seats, 0);
+function fillFilters() {
+  for (const id of ['#tflt', '#atflt']) {
+    const el = $(id), cur = el.value || 'all';
+    el.innerHTML = '<option value="all">Todas las mesas</option><option value="none">Sin mesa asignada</option>' + tableChoices().map((t) => `<option value="${esc(t)}">${esc(tableLabel(t))}</option>`).join('');
+    el.value = [...el.options].some((o) => o.value === cur) ? cur : 'all';
+  }
+}
+function fillTableSelect() {
+  const sel = $('#fTable'), cur = sel.value, seats = Number($('#fSeats').value) || 1;
+  sel.innerHTML = '<option value="">Sin mesa (por asignar)</option>' + tableChoices().map((t) => {
+    const free = cfg.tableCapacity - usedIn(t, editing && editing.id);
+    return `<option value="${esc(t)}">${esc(tableLabel(t))} · ${free <= 0 ? 'llena' : free + ' ' + plural(free, 'libre', 'libres')}${free < seats && free > 0 ? ' (no alcanzan)' : ''}</option>`;
+  }).join('');
+  if (cur && ![...sel.options].some((o) => o.value === cur)) sel.insertAdjacentHTML('beforeend', `<option value="${esc(cur)}">Mesa ${esc(cur)}</option>`);
+  sel.value = cur;
+  tblHelp();
+}
+function tblHelp() {
+  const t = $('#fTable').value, seats = Number($('#fSeats').value) || 0, el = $('#fTblHelp');
+  if (!t) { el.textContent = ''; el.style.color = ''; return; }
+  const free = cfg.tableCapacity - usedIn(t, editing && editing.id);
+  if (free < seats) { el.textContent = free <= 0 ? `${tableLabel(t)} ya está llena (${cfg.tableCapacity} lugares).` : `${tableLabel(t)} solo tiene ${free} ${plural(free, 'lugar libre', 'lugares libres')}; esta invitación necesita ${seats}.`; el.style.color = 'var(--no)'; }
+  else { el.textContent = `${tableLabel(t)}: quedarán ${free - seats} ${plural(free - seats, 'lugar libre', 'lugares libres')} de ${cfg.tableCapacity}.`; el.style.color = ''; }
+}
 function renderRows() {
-  const q = $('#q').value.trim().toLowerCase(), f = $('#flt').value;
+  const q = $('#q').value, f = $('#flt').value, tf = $('#tflt').value;
   const list = invs.filter((i) => {
-    if (q && !(`${i.guest} ${i.table} ${i.id}`.toLowerCase().includes(q))) return false;
+    if (!matchQuery(i, q) || !matchTable(i, tf)) return false;
+    if (f === 'opened') return !!i.openCount;
     if (f === 'confirmed') return i.rsvp.status === 'confirmed';
     if (f === 'pending') return i.rsvp.status === 'pending';
     if (f === 'declined') return i.rsvp.status === 'declined';
@@ -462,12 +572,17 @@ function renderRows() {
       <button class="iconbtn danger" data-act="del" type="button" title="Eliminar" aria-label="Eliminar ${esc(i.guest)}">${I.del}</button>
     </div></td></tr>`).join('');
   const em = $('#empty'); em.hidden = list.length > 0;
-  if (!list.length) em.innerHTML = invs.length ? 'Ninguna invitación coincide con la búsqueda.' : '<b>Aún no hay invitaciones</b>Ve a “Crear invitación” para hacer la primera.';
+  if (!list.length) em.innerHTML = invs.length ? 'Ninguna invitación coincide con la búsqueda o los filtros.' : '<b>Aún no hay invitaciones</b>Ve a “Crear invitación” para hacer la primera.';
 }
 async function refresh() {
   if (!configured) return;
   const r = await jfetch('/api/admin/invitations');
-  if (r.ok) { invs = r.data.invitations; stats = r.data.stats; lastRefreshOk = true; renderStats(); renderRows(); if (view === 'att') renderAtt(); } else lastRefreshOk = false;
+  if (r.ok) {
+    invs = r.data.invitations; stats = r.data.stats; lastRefreshOk = true;
+    if (r.data.config) cfg = r.data.config;
+    fillFilters(); fillTableSelect(); renderStats(); renderRows();
+    if (view === 'att') renderAtt(); if (view === 'map') renderMap();
+  } else lastRefreshOk = false;
 }
 const refreshSoon = () => { clearTimeout(refreshT); refreshT = setTimeout(refresh, 400); };
 
@@ -503,7 +618,7 @@ $('#delYes').onclick = async () => {
   if (r.ok || r.status === 404) { toast({ type: 'confirm', title: 'Invitación eliminada', text: '' }); refresh(); }
   else toast({ type: 'decline', title: 'No se pudo eliminar', text: 'Inténtalo de nuevo.' });
 };
-$('#q').addEventListener('input', renderRows); $('#flt').addEventListener('change', renderRows);
+$('#q').addEventListener('input', renderRows); $('#flt').addEventListener('change', renderRows); $('#tflt').addEventListener('change', renderRows);
 $('#btnCsv').onclick = () => {
   const st = { confirmed: 'Confirmada', declined: 'No asistirá', pending: 'Sin responder' };
   const rows = [['Invitado', 'Lugares asignados', 'Mesa', 'Estado', 'Lugares confirmados', 'Veces abierta', 'Enlace']];
@@ -521,46 +636,48 @@ function renderAtt() {
   $('#aIn').textContent = s.attended || 0; $('#aInSub').textContent = s.arrived ? `en ${s.arrived} ${plural(s.arrived, 'invitación', 'invitaciones')}` : ' ';
   $('#aOk').textContent = s.attendedOfConfirmed || 0; $('#aOkSub').textContent = `de ${s.seatsConfirmed || 0} confirmados`;
   $('#aBar').style.width = s.seatsConfirmed ? `${Math.round(((s.attendedOfConfirmed || 0) / s.seatsConfirmed) * 100)}%` : '0';
-  $('#aPend').textContent = s.pendingArrival || 0; $('#aExtra').textContent = s.attendedUnconfirmed || 0;
-  const q = $('#aq').value.trim().toLowerCase(), f = $('#aflt').value;
+  $('#aPend').textContent = s.pendingArrival || 0;
+  const q = $('#aq').value, f = $('#aflt').value, tf = $('#atflt').value;
   const list = invs.filter((i) => {
-    if (q && !(`${i.guest} ${i.table}`.toLowerCase().includes(q))) return false;
+    if (!matchQuery(i, q) || !matchTable(i, tf)) return false;
     if (f === 'conf') return i.rsvp.status === 'confirmed';
     if (f === 'in') return attOf(i) > 0;
     if (f === 'wait') return confOf(i) > attOf(i);
-    if (f === 'extra') return attOf(i) > confOf(i);
+    if (f === 'unconf') return i.rsvp.status !== 'confirmed';
     return true;
   }).sort((a, b) => (confOf(b) > 0) - (confOf(a) > 0) || a.guest.localeCompare(b.guest, 'es'));
   $('#aRows').innerHTML = list.map((i) => {
     const a = attOf(i), c = confOf(i);
-    const tag = a === 0 ? (c ? '<span class="tag wait">Aún no llega</span>' : '<span class="muted">—</span>')
-      : a >= c && c > 0 ? '<span class="tag ok">✔ Llegaron todos</span>' : c > 0 ? `<span class="tag seen">Faltan ${c - a}</span>` : '<span class="tag no">Sin confirmar</span>';
+    const tag = a === 0 ? (c ? '<span class="tag wait">Aún no llega</span>' : '<span class="muted">No puede ingresar: sin confirmar</span>')
+      : a >= c ? '<span class="tag ok">✔ Llegaron todos los confirmados</span>' : `<span class="tag seen">Faltan ${c - a}</span>`;
     return `<tr data-id="${esc(i.id)}">
       <td><div class="gname">${esc(i.guest)}</div><div class="muted">${i.seats} ${plural(i.seats, 'lugar asignado', 'lugares asignados')}</div></td>
       <td class="seatsmesa"><b>${i.table ? esc(i.table) : '–'}</b></td>
       <td>${statusTag(i)}</td>
-      <td class="seatsmesa"><b>${a}</b> de ${i.seats}<div style="margin-top:6px">${tag}</div>${i.attendedAt ? `<div class="muted">${when(i.attendedAt)}</div>` : ''}</td>
-      <td><div class="rowact"><button class="btn sm" data-act="att" type="button">Corregir</button>
+      <td class="seatsmesa"><b>${a}</b> de ${c} ${plural(c, 'confirmado', 'confirmados')}<div style="margin-top:6px">${tag}</div>${i.attendedAt ? `<div class="muted">${when(i.attendedAt)}</div>` : ''}</td>
+      <td><div class="rowact">${c > 0 || a > 0 ? '<button class="btn sm" data-act="att" type="button">Corregir</button>' : ''}
         <a class="btn sm" href="${esc(site + '/entrada/' + i.id)}" target="_blank" rel="noopener" title="Abre la pantalla que se ve al escanear el QR">Pantalla de acceso</a></div></td></tr>`;
   }).join('');
   const em = $('#aEmpty'); em.hidden = list.length > 0;
   if (!list.length) em.innerHTML = invs.length ? 'Ninguna invitación coincide.' : '<b>Aún no hay invitaciones</b>Cuando crees invitaciones aparecerán aquí.';
 }
-$('#aq').addEventListener('input', renderAtt); $('#aflt').addEventListener('change', renderAtt);
+$('#aq').addEventListener('input', renderAtt); $('#aflt').addEventListener('change', renderAtt); $('#atflt').addEventListener('change', renderAtt);
 let attTarget = null;
-const setAtt = (n) => { $('#attVal').value = Math.max(0, Math.min(attTarget.seats, Number(n) || 0)); };
+const setAtt = (n) => { $('#attVal').value = Math.max(0, Math.min(confOf(attTarget), Number(n) || 0)); };
 $('#aRows').addEventListener('click', (ev) => {
   const b = ev.target.closest('button[data-act="att"]'); if (!b) return;
   attTarget = invs.find((i) => i.id === b.closest('tr').dataset.id); if (!attTarget) return;
-  $('#attMsg').textContent = `${attTarget.guest} · ${attTarget.seats} ${plural(attTarget.seats, 'lugar asignado', 'lugares asignados')}`;
-  $('#attHelp').textContent = `Máximo ${attTarget.seats}. Úsalo solo para corregir un error de captura.`;
+  const cf = confOf(attTarget);
+  $('#attMsg').textContent = `${attTarget.guest} · confirmó ${cf} de ${attTarget.seats} ${plural(attTarget.seats, 'lugar asignado', 'lugares asignados')}`;
+  $('#attHelp').textContent = `Máximo ${cf} (los confirmados). Úsalo solo para corregir un error de captura.`;
   $('#attErr').textContent = ''; setAtt(attOf(attTarget)); $('#dlgAtt').showModal();
 });
 $('#attMinus').onclick = () => setAtt(Number($('#attVal').value) - 1); $('#attPlus').onclick = () => setAtt(Number($('#attVal').value) + 1);
 $('#attNo').onclick = () => $('#dlgAtt').close();
 $('#attYes').onclick = async () => {
   const v = Number($('#attVal').value);
-  if (!Number.isInteger(v) || v < 0 || v > attTarget.seats) { $('#attErr').textContent = `Debe ser un número de 0 a ${attTarget.seats}.`; return; }
+  const mx = confOf(attTarget);
+  if (!Number.isInteger(v) || v < 0 || v > mx) { $('#attErr').textContent = `Debe ser un número de 0 a ${mx} (los lugares confirmados).`; return; }
   $('#attYes').disabled = true;
   const r = await jfetch(`/api/admin/invitations/${attTarget.id}/attendance`, { method: 'POST', body: JSON.stringify({ attended: v }) });
   $('#attYes').disabled = false;
@@ -574,25 +691,91 @@ $('#aCsv').onclick = () => {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'asistencia-xv-valeria-zoe.csv'; a.click();
 };
 
+/* ---------- mapa de mesas (menú 4) ---------- */
+/* Distribución del salón: Principal arriba; 1–6 a la izquierda; 10–15 a la derecha; 7, 8 y 9 abajo; pista al centro. */
+const LAYOUT = { left: ['1', '2', '3', '4', '5', '6'], bottom: ['7', '8', '9'], right: ['10', '11', '12', '13', '14', '15'] };
+/* Un punto por lugar asignado, con el estado de quien lo ocupa. */
+function seatStates(i) {
+  const c = confOf(i), a = Math.min(attOf(i), c);
+  if (i.rsvp.status === 'confirmed') return Array.from({ length: i.seats }, (_, k) => (k < a ? 'in' : k < c ? 'conf' : 'rel'));
+  return Array.from({ length: i.seats }, () => (i.rsvp.status === 'declined' ? 'no' : 'pend'));
+}
+const STATE_TXT = { in: 'ya ingresó', conf: 'confirmó', pend: 'sin responder', no: 'no asistirá', rel: 'lugar liberado', free: 'libre' };
+/* 12 lugares alrededor de una mesa cuadrada: 3 por lado, en el sentido del reloj desde arriba a la izquierda. */
+const SEAT_POS = [[1, 2], [1, 3], [1, 4], [2, 5], [3, 5], [4, 5], [5, 4], [5, 3], [5, 2], [4, 1], [3, 1], [2, 1]];
+function tableHTML(t, extra = '') {
+  const here = invs.filter((i) => i.table === t).sort((a, b) => a.guest.localeCompare(b.guest, 'es'));
+  const used = here.reduce((n, i) => n + i.seats, 0), cap = cfg.tableCapacity;
+  const seats = [];
+  here.forEach((i) => seatStates(i).forEach((st) => seats.push({ st, who: i.guest })));
+  while (seats.length < cap) seats.push({ st: 'free', who: '' });
+  const dots = seats.slice(0, cap).map((x, k) => `<i class="sd ${x.st}" style="grid-row:${SEAT_POS[k % 12][0]};grid-column:${SEAT_POS[k % 12][1]}" title="${esc(x.who ? x.who + ' · ' : '')}${STATE_TXT[x.st]}"></i>`).join('');
+  const cls = used > cap ? 'over' : used >= cap ? 'full' : '';
+  const name = t === cfg.mainTable ? 'PRINCIPAL' : `Mesa ${esc(t)}`;
+  return `<button type="button" class="tbl ${cls} ${extra}" data-t="${esc(t)}" aria-label="${esc(tableLabel(t))}: ${used} de ${cap} lugares asignados. Ver invitados">${dots}<span class="tcore"><b>${name}</b><small>${used}/${cap}</small></span></button>`;
+}
+function renderMap() {
+  const place = (t, row, col) => tableHTML(t).replace('<button ', `<button style="grid-row:${row};grid-column:${col}" `);
+  let h = tableHTML(cfg.mainTable, 'main').replace('<button ', '<button ');
+  h += '<div class="dance">PISTA<br>DE<br>BAILE</div>';
+  LAYOUT.left.forEach((t, k) => { h += place(t, k + 2, 1); });
+  LAYOUT.right.forEach((t, k) => { h += place(t, k + 2, 5); });
+  LAYOUT.bottom.forEach((t, k) => { h += place(t, 7, k + 2); });
+  $('#floor').innerHTML = h;
+  // resumen
+  const tables = tableChoices(), cap = cfg.tableCapacity;
+  const inTables = invs.filter((i) => i.table).reduce((n, i) => n + i.seats, 0);
+  const none = invs.filter((i) => !i.table);
+  const noneSeats = none.reduce((n, i) => n + i.seats, 0);
+  const full = tables.filter((t) => usedIn(t) >= cap).length;
+  $('#mUsed').textContent = inTables; $('#mUsedSub').textContent = `de ${tables.length * cap} lugares disponibles`;
+  $('#mBar').style.width = `${Math.min(100, Math.round((inTables / (tables.length * cap)) * 100))}%`;
+  $('#mFull').textContent = full; $('#mFullSub').textContent = `de ${tables.length} mesas`;
+  $('#mNone').textContent = none.length; $('#mNoneSub').textContent = noneSeats ? `${noneSeats} ${plural(noneSeats, 'lugar', 'lugares')} por ubicar` : 'todas tienen mesa';
+  $('#noTablePanel').hidden = !none.length;
+  $('#noTable').innerHTML = none.sort((a, b) => a.guest.localeCompare(b.guest, 'es')).map((i) => `<li data-id="${esc(i.id)}"><span><b>${esc(i.guest)}</b> <span class="muted">· ${i.seats} ${plural(i.seats, 'lugar', 'lugares')}</span></span><button class="btn sm" type="button" data-act="edit">Asignar mesa</button></li>`).join('');
+}
+$('#floor').addEventListener('click', (ev) => {
+  const b = ev.target.closest('.tbl'); if (!b) return;
+  const t = b.dataset.t, here = invs.filter((i) => i.table === t).sort((a, b2) => a.guest.localeCompare(b2.guest, 'es'));
+  const used = here.reduce((n, i) => n + i.seats, 0);
+  $('#dlgTblT').textContent = tableLabel(t);
+  $('#tblMsg').textContent = `${used} de ${cfg.tableCapacity} lugares asignados · ${Math.max(0, cfg.tableCapacity - used)} ${plural(Math.max(0, cfg.tableCapacity - used), 'libre', 'libres')}`;
+  $('#tblList').innerHTML = here.length ? here.map((i) => `<li data-id="${esc(i.id)}"><div><div class="gn">${esc(i.guest)}</div><div class="gm">${i.seats} ${plural(i.seats, 'lugar', 'lugares')}${i.rsvp.status === 'confirmed' ? ` · confirmó ${i.rsvp.count}${attOf(i) ? ` · ingresaron ${attOf(i)}` : ''}` : i.rsvp.status === 'declined' ? ' · no asistirá' : ' · sin responder'}</div></div><button class="btn sm" type="button" data-act="edit">Editar</button></li>`).join('')
+    : '<li><span class="muted">Todavía no hay invitados en esta mesa.</span></li>';
+  $('#dlgTbl').showModal();
+});
+$('#tblClose').onclick = () => $('#dlgTbl').close();
+$('#tblList').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-act="edit"]'); if (!b) return;
+  const inv = invs.find((i) => i.id === b.closest('li').dataset.id); if (!inv) return;
+  $('#dlgTbl').close(); startEdit(inv);
+});
+$('#noTable').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-act="edit"]'); if (!b) return;
+  const inv = invs.find((i) => i.id === b.closest('li').dataset.id); if (inv) startEdit(inv);
+});
+
 /* ---------- creador ---------- */
 function resetCreator() {
   editing = null; created = null;
   $('#frm').hidden = false; $('#result').hidden = true; $('#editBanner').hidden = true; $('#fCancel').hidden = true;
   $('#frmTitle').textContent = 'Datos del invitado'; $('#frmSub').textContent = 'Escribe quién recibirá la invitación. El enlace se genera al guardar.';
-  $('#fGuest').value = ''; $('#fSeats').value = 2; $('#fTable').value = ''; $('#fErr').textContent = '';
+  $('#fGuest').value = ''; $('#fSeats').value = 2; $('#fErr').textContent = ''; $('#fTable').value = ''; fillTableSelect();
   $('#fHelp').textContent = 'El invitado podrá confirmar esa cantidad de lugares o menos.'; $('#fSave').textContent = 'Generar invitación';
 }
 function startEdit(inv) {
   resetCreator(); editing = inv;
   $('#frmTitle').textContent = 'Editar datos'; $('#frmSub').textContent = 'Los cambios se ven de inmediato en el mismo enlace.';
   $('#editBanner').hidden = false; $('#editBanner').textContent = `Editando la invitación de “${inv.guest}”.`;
-  $('#fGuest').value = inv.guest; $('#fSeats').value = inv.seats; $('#fTable').value = inv.table; $('#fCancel').hidden = false; $('#fSave').textContent = 'Guardar cambios';
+  $('#fGuest').value = inv.guest; $('#fSeats').value = inv.seats; $('#fTable').value = inv.table; fillTableSelect(); $('#fCancel').hidden = false; $('#fSave').textContent = 'Guardar cambios';
   if (inv.rsvp.status === 'confirmed') $('#fHelp').textContent = `Ya confirmó ${inv.rsvp.count} ${plural(inv.rsvp.count, 'lugar', 'lugares')}. Si bajas los lugares asignados por debajo de eso, su confirmación se ajusta sola.`;
   show('create'); $('#fGuest').focus();
 }
 function cancelEdit() { editing = null; resetCreator(); }
 $('#fCancel').onclick = () => { cancelEdit(); show('list'); };
-const setSeats = (n) => { $('#fSeats').value = Math.max(1, Math.min(20, n || 1)); };
+const setSeats = (n) => { $('#fSeats').value = Math.max(1, Math.min(20, n || 1)); fillTableSelect(); };
+$('#fSeats').addEventListener('input', tblHelp); $('#fTable').addEventListener('change', tblHelp);
 $('#seatsMinus').onclick = () => setSeats(Number($('#fSeats').value) - 1);
 $('#seatsPlus').onclick = () => setSeats(Number($('#fSeats').value) + 1);
 $('#frm').addEventListener('submit', async (ev) => {
@@ -604,12 +787,18 @@ $('#frm').addEventListener('submit', async (ev) => {
   const body = JSON.stringify({ guest, seats, table });
   const r = editing ? await jfetch(`/api/admin/invitations/${editing.id}`, { method: 'PUT', body }) : await jfetch('/api/admin/invitations', { method: 'POST', body });
   $('#fSave').disabled = false;
-  if (!r.ok) { err.textContent = 'No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.'; return; }
+  if (!r.ok) {
+    const d = r.data || {};
+    err.textContent = d.error === 'table_full' ? `${tableLabel(d.table)} solo tiene ${d.free} ${plural(d.free, 'lugar libre', 'lugares libres')} (límite de ${d.capacity} por mesa). Elige otra mesa o reduce los lugares.`
+      : d.details && d.details.includes('table_invalid') ? 'Elige una mesa válida: Principal o del 1 al ' + cfg.tableCount + '.'
+      : 'No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.';
+    return;
+  }
   await refresh();
   if (editing) { toast({ type: 'confirm', title: 'Cambios guardados', text: r.data.warning ? 'La confirmación se ajustó a los nuevos lugares.' : '' }); cancelEdit(); show('list'); return; }
   const inv = r.data.invitation; created = inv;
   $('#frm').hidden = true; $('#result').hidden = false;
-  $('#resMsg').textContent = `Invitación creada para ${inv.guest}: ${inv.seats} ${plural(inv.seats, 'lugar', 'lugares')}${inv.table ? `, mesa ${inv.table}` : ''}.`;
+  $('#resMsg').textContent = `Invitación creada para ${inv.guest}: ${inv.seats} ${plural(inv.seats, 'lugar', 'lugares')}${inv.table ? `, ${tableLabel(inv.table).toLowerCase()}` : ''}.`;
   $('#resLink').value = link(inv.id); $('#resOpen').href = previewLink(inv.id);
 });
 $('#resCopy').onclick = () => created && copy(link(created.id));
@@ -665,8 +854,8 @@ function describeEvent(e) {
       else text = `${e.guest} cambió de ${lugares(e.previousCount)} a ${lugares(e.count)}`;
       return { title: 'Asistencia modificada', text };
     }
-    case 'checkin': return { title: 'Ingreso registrado', text: `${e.guest}: ingresaron ${e.added} ${e.added === 1 ? 'persona' : 'personas'} (${e.attended} de ${e.seats})` };
-    case 'checkin_fix': return { title: 'Ingreso corregido', text: `${e.guest}: ahora ${e.attended} de ${e.seats} adentro` };
+    case 'checkin': return { title: 'Ingreso registrado', text: `${e.guest}: ingresaron ${e.added} ${e.added === 1 ? 'persona' : 'personas'} (${e.attended} de ${e.confirmed ?? e.seats} confirmados)` };
+    case 'checkin_fix': return { title: 'Ingreso corregido', text: `${e.guest}: ahora ${e.attended} de ${e.confirmed ?? e.seats} confirmados adentro` };
     default: return { title: 'Novedad', text: String(e.guest ?? '') };
   }
 }

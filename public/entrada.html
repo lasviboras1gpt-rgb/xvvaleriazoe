@@ -22,7 +22,7 @@ main{width:100%;max-width:480px;padding:18px 16px 40px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;box-shadow:0 4px 18px rgba(120,85,25,.12);text-align:center}
 .lbl{font:600 11.5px var(--caps);letter-spacing:.16em;text-transform:uppercase;color:var(--ink2)}
 .guest{margin:.15em 0 .1em;font:400 clamp(38px,11vw,50px)/1.1 'Great Vibes',cursive;color:var(--gold-d);word-break:break-word;padding:.05em .1em}
-.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 4px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 4px}
 .fact{padding:10px 6px;border-radius:12px;background:#fbf3dc;border:1px solid var(--line)}
 .fact b{display:block;font:600 30px/1.1 var(--caps);color:var(--gold-d)}
 .fact span{font-size:13px;color:var(--ink2)}
@@ -47,6 +47,7 @@ main{width:100%;max-width:480px;padding:18px 16px 40px}
 .full{padding:14px;border-radius:12px;background:var(--ok-bg);color:var(--ok);font-weight:700;margin-top:16px}
 .fix{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
 .fix .stepper{height:60px}.fix .stepper button{width:66px;font-size:30px}.fix .stepper output{font-size:32px}
+.blocked{margin-top:16px;padding:14px;border-radius:12px;background:var(--warn-bg);color:var(--warn);font-weight:700;line-height:1.4}
 .msg{padding:30px 10px}.msg b{display:block;font:400 34px 'Great Vibes',cursive;color:var(--gold-d);margin-bottom:6px}
 </style>
 </head>
@@ -63,6 +64,7 @@ main{width:100%;max-width:480px;padding:18px 16px 40px}
     <span class="tag" id="rsvpTag"></span>
     <div class="facts">
       <div class="fact"><b id="fSeats">0</b><span>lugares asignados</span></div>
+      <div class="fact"><b id="fConf">0</b><span>confirmados</span></div>
       <div class="fact"><b id="fTable">–</b><span>mesa</span></div>
     </div>
     <div class="bar"><i id="bar"></i></div>
@@ -75,7 +77,8 @@ main{width:100%;max-width:480px;padding:18px 16px 40px}
       <div class="warn" id="warn" hidden></div>
       <button class="go" type="button" id="save">Registrar ingreso</button>
     </div>
-    <div class="full" id="full" hidden>✔ Ya ingresaron todos los lugares de esta invitación.</div>
+    <div class="full" id="full" hidden>✔ Ya ingresaron todos los lugares confirmados de esta invitación.</div>
+    <div class="blocked" id="blocked" hidden></div>
     <p class="err" id="err" role="alert"></p>
 
     <button class="ghost" type="button" id="fixOpen">Corregir total de ingresados</button>
@@ -105,33 +108,38 @@ async function api(method, body) {
   let data = null; try { data = await r.json(); } catch {}
   return { ok: r.ok, status: r.status, data };
 }
+// El límite de ingreso son los lugares CONFIRMADOS por el invitado (no los asignados).
 function render() {
-  const left = D.seats - D.attended;
-  $('#gName').textContent = D.guest; $('#fSeats').textContent = D.seats; $('#fTable').textContent = D.table || 'Por asignar';
+  const lim = D.limit, left = Math.max(0, lim - D.attended), confirmed = D.rsvp.status === 'confirmed';
+  $('#gName').textContent = D.guest; $('#fSeats').textContent = D.seats; $('#fConf').textContent = lim; $('#fTable').textContent = D.table || 'Por asignar';
   const t = $('#rsvpTag');
-  if (D.rsvp.status === 'confirmed') { t.className = 'tag ok'; t.textContent = `✔ Confirmó ${D.rsvp.count} de ${D.seats}`; }
+  if (confirmed) { t.className = 'tag ok'; t.textContent = `✔ Confirmó ${D.rsvp.count} de ${D.seats}`; }
   else if (D.rsvp.status === 'declined') { t.className = 'tag no'; t.textContent = 'Avisó que no asistiría'; }
-  else { t.className = 'tag wait'; t.textContent = 'No había confirmado'; }
-  $('#bar').style.width = D.seats ? `${Math.round((D.attended / D.seats) * 100)}%` : '0';
-  $('#inside').textContent = `Ya ingresaron: ${D.attended} de ${D.seats}`;
-  $('#entry').hidden = left <= 0; $('#full').hidden = left > 0;
-  const confLeft = D.rsvp.status === 'confirmed' ? Math.max(0, D.rsvp.count - D.attended) : 0;
-  n = Math.max(1, Math.min(left, confLeft || 1)); setN(n);
-  $('#max').textContent = `Máximo ${left} ${plural(left, 'persona', 'personas')} más (según los lugares asignados).`;
-  const w = $('#warn');
-  if (D.rsvp.status !== 'confirmed') { w.hidden = false; w.textContent = D.rsvp.status === 'declined' ? 'Esta invitación avisó que no asistiría; puedes registrar el ingreso de todos modos.' : 'Esta invitación no confirmó asistencia; puedes registrar el ingreso de todos modos.'; }
-  else if (D.attended + 1 > D.rsvp.count) { w.hidden = false; w.textContent = `Confirmó ${D.rsvp.count}; ya ingresaron ${D.attended}. Lo que registres de más cuenta como no confirmado.`; }
-  else w.hidden = true;
+  else { t.className = 'tag wait'; t.textContent = 'No ha confirmado'; }
+  $('#bar').style.width = lim ? `${Math.round((D.attended / lim) * 100)}%` : '0';
+  $('#inside').textContent = confirmed ? `Ya ingresaron: ${D.attended} de ${lim} confirmados` : `Ya ingresaron: ${D.attended}`;
+  const bl = $('#blocked');
+  bl.hidden = confirmed;
+  if (!confirmed) bl.textContent = D.rsvp.status === 'declined'
+    ? 'Esta invitación avisó que no asistiría, por eso no se puede registrar el ingreso. Si sí viene, el invitado debe volver a abrir su invitación y confirmar.'
+    : 'Esta invitación no ha confirmado asistencia, por eso no se puede registrar el ingreso. El invitado debe abrir su invitación y confirmar sus lugares.';
+  $('#entry').hidden = !confirmed || left <= 0; $('#full').hidden = !confirmed || left > 0;
+  $('#fixOpen').hidden = !confirmed; if (!confirmed) $('#fix').hidden = true;
+  setN(Math.max(1, left));
+  $('#max').textContent = `Máximo ${left} ${plural(left, 'persona', 'personas')} más: confirmaron ${lim} de ${D.seats} ${plural(D.seats, 'lugar asignado', 'lugares asignados')}.`;
+  $('#warn').hidden = true;
   fn = D.attended; setF(fn);
 }
-function setN(v) { const left = D.seats - D.attended; n = Math.max(1, Math.min(Math.max(1, left), v)); $('#n').textContent = n; $('#minus').disabled = n <= 1; $('#plus').disabled = n >= left; }
-function setF(v) { fn = Math.max(0, Math.min(D.seats, v)); $('#fn').textContent = fn; $('#fminus').disabled = fn <= 0; $('#fplus').disabled = fn >= D.seats; }
+function setN(v) { const left = Math.max(0, D.limit - D.attended); n = Math.max(1, Math.min(Math.max(1, left), v)); $('#n').textContent = n; $('#minus').disabled = n <= 1; $('#plus').disabled = n >= left; }
+function setF(v) { fn = Math.max(0, Math.min(D.limit, v)); $('#fn').textContent = fn; $('#fminus').disabled = fn <= 0; $('#fplus').disabled = fn >= D.limit; }
 $('#minus').onclick = () => setN(n - 1); $('#plus').onclick = () => setN(n + 1);
 $('#fminus').onclick = () => setF(fn - 1); $('#fplus').onclick = () => setF(fn + 1);
 $('#fixOpen').onclick = () => { $('#fix').hidden = !$('#fix').hidden; };
 function errText(r) {
   const c = r.data?.error;
-  return c === 'count_exceeds_seats' ? `No se puede: solo hay ${r.data.seats} ${plural(r.data.seats, 'lugar asignado', 'lugares asignados')} y ya ingresaron ${r.data.attended}.` : r.status === 404 ? 'Esta invitación ya no existe.' : 'No se pudo guardar. Revisa tu internet e inténtalo de nuevo.';
+  return c === 'count_exceeds_confirmed' ? `No se puede: solo confirmaron ${r.data.confirmed} ${plural(r.data.confirmed, 'lugar', 'lugares')} y ya ingresaron ${r.data.attended}.`
+    : c === 'not_confirmed' ? 'Esta invitación no ha confirmado asistencia. El invitado debe confirmar desde su invitación.'
+    : r.status === 404 ? 'Esta invitación ya no existe.' : 'No se pudo guardar. Revisa tu internet e inténtalo de nuevo.';
 }
 $('#save').onclick = async () => {
   $('#err').textContent = ''; $('#save').disabled = true;
@@ -139,7 +147,7 @@ $('#save').onclick = async () => {
     const r = await api('POST', { add: n });
     if (r.ok) {
       D = r.data; $('#okBig').textContent = `+${n}`;
-      $('#okTxt').textContent = `Ingresaron ${n} ${plural(n, 'persona', 'personas')} · ${D.guest}. Total adentro: ${D.attended} de ${D.seats}.`;
+      $('#okTxt').textContent = `Ingresaron ${n} ${plural(n, 'persona', 'personas')} · ${D.guest}. Total adentro: ${D.attended} de ${D.limit} confirmados.`;
       show('ok');
     } else { $('#err').textContent = errText(r); if (r.data?.attended !== undefined) { D.attended = r.data.attended; render(); } }
   } catch { $('#err').textContent = errText({ status: 0 }); }

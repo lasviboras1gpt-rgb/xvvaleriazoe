@@ -11,7 +11,7 @@ const admin = { authorization: `Bearer ${PW}` };
 
 async function setup(extra = {}) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'xv-test-'));
-  let t = 1_800_000_000_000;
+  let t = Date.parse("2026-11-04T12:00:00-06:00");
   const clock = { now: () => (t += 1000), advance: (ms) => (t += ms) };
   const api = createApi({ store: createFileStore(dir), adminToken: PW, now: clock.now, ...extra });
   const call = (method, p, body, headers = {}, query = {}) => api.handle({ method, path: p, body, headers, query });
@@ -27,7 +27,7 @@ test('crea invitaciones y la vista pública solo expone lo necesario', async () 
   assert.match(inv.id, /^[a-z0-9]{10}$/);
   const pub = await call('GET', `/api/invitation/${inv.id}`);
   assert.equal(pub.status, 200);
-  assert.deepEqual(Object.keys(pub.body).sort(), ['guest', 'id', 'rsvp', 'seats', 'table']);
+  assert.deepEqual(Object.keys(pub.body).sort(), ['guest', 'id', 'rsvp', 'rsvpOpen', 'rsvpUntil', 'seats', 'table']);
   assert.equal(pub.body.guest, 'Familia Pérez');
 });
 
@@ -199,4 +199,85 @@ test('una clave de administración débil (corta) se rechaza: el panel queda des
   const api = createApi({ store: createFileStore(dir), adminToken: 'corta' });
   const r = await api.handle({ method: 'GET', path: '/api/admin/invitations', headers: { authorization: 'Bearer corta' } });
   assert.equal(r.status, 503);
+});
+
+// ---------- Fechas límite, vigencia y mesas ----------
+const RULES = { rsvpUntil: Date.parse('2026-11-20T23:59:59-06:00'), viewUntil: Date.parse('2026-12-02T23:59:59-06:00') };
+
+async function setupAt(isoNow) {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'xv-rules-'));
+  let t = Date.parse(isoNow);
+  const api = createApi({ store: createFileStore(dir), adminToken: undefined, now: () => t, rules: RULES });
+  const call = (method, p, body) => api.handle({ method, path: p, body, headers: {}, query: {} });
+  return { call, set: (iso) => (t = Date.parse(iso)) };
+}
+
+test('confirmar/modificar solo hasta el 20 de nov; después la invitación se sigue viendo sin botón', async () => {
+  const { call, set } = await setupAt('2026-11-10T12:00:00-06:00');
+  const inv = (await call('POST', '/api/admin/invitations', { guest: 'Ana', seats: 4, table: '3' })).body.invitation;
+  let v = (await call('GET', `/api/invitation/${inv.id}`)).body;
+  assert.equal(v.rsvpOpen, true);
+  assert.equal(v.rsvpUntil, '2026-11-21T05:59:59.000Z');
+  assert.equal((await call('POST', `/api/invitation/${inv.id}/rsvp`, { attending: true, count: 2 })).status, 200);
+  set('2026-11-20T23:30:00-06:00'); // último día, todavía abierto
+  assert.equal((await call('POST', `/api/invitation/${inv.id}/rsvp`, { attending: true, count: 3 })).status, 200);
+  set('2026-11-21T00:00:01-06:00'); // ya cerró
+  v = (await call('GET', `/api/invitation/${inv.id}`)).body;
+  assert.equal(v.rsvpOpen, false);
+  assert.equal(v.rsvp.count, 3); // sigue viendo su invitación y su respuesta
+  const late = await call('POST', `/api/invitation/${inv.id}/rsvp`, { attending: true, count: 1 });
+  assert.equal(late.status, 403);
+  assert.equal(late.body.error, 'rsvp_closed');
+  assert.equal((await call('GET', `/api/invitation/${inv.id}`)).body.rsvp.count, 3); // no cambió
+});
+
+test('la invitación se puede ver hasta el 2 de diciembre; después responde "expired"', async () => {
+  const { call, set } = await setupAt('2026-11-10T12:00:00-06:00');
+  const inv = (await call('POST', '/api/admin/invitations', { guest: 'Ana', seats: 2 })).body.invitation;
+  set('2026-12-02T23:00:00-06:00');
+  assert.equal((await call('GET', `/api/invitation/${inv.id}`)).status, 200);
+  assert.equal((await call('POST', `/api/invitation/${inv.id}/open`)).status, 200);
+  set('2026-12-03T00:00:01-06:00');
+  const r = await call('GET', `/api/invitation/${inv.id}`);
+  assert.equal(r.status, 410);
+  assert.equal(r.body.error, 'expired');
+  assert.equal((await call('POST', `/api/invitation/${inv.id}/open`)).status, 410);
+  assert.equal((await call('POST', `/api/invitation/${inv.id}/rsvp`, { attending: true, count: 1 })).status, 410);
+  assert.equal((await call('GET', '/api/admin/invitations')).status, 200); // el panel sigue funcionando
+});
+
+test('una invitación eliminada responde 404 (la página muestra "enlace ya no disponible")', async () => {
+  const { call } = await setupAt('2026-11-10T12:00:00-06:00');
+  const inv = (await call('POST', '/api/admin/invitations', { guest: 'Ana', seats: 2 })).body.invitation;
+  await call('DELETE', `/api/admin/invitations/${inv.id}`);
+  assert.equal((await call('GET', `/api/invitation/${inv.id}`)).status, 404);
+});
+
+test('mesas: solo Principal o 1 a 15, y máximo 12 lugares por mesa', async () => {
+  const { call } = await setupAt('2026-11-10T12:00:00-06:00');
+  const mk = (guest, seats, table) => call('POST', '/api/admin/invitations', { guest, seats, table });
+  assert.equal((await mk('A', 5, 'Mesa 4')).body.invitation.table, '4'); // se normaliza
+  assert.equal((await mk('B', 2, 'principal')).body.invitation.table, 'Principal');
+  assert.equal((await mk('C', 2, '')).body.invitation.table, ''); // sin mesa todavía
+  for (const bad of ['0', '16', '99', 'abc', '3.5']) {
+    const r = await mk('X', 1, bad);
+    assert.equal(r.status, 400, bad);
+    assert.ok(r.body.details.includes('table_invalid'), bad);
+  }
+  assert.equal((await mk('D', 7, '4')).status, 201); // 5 + 7 = 12, justo
+  const full = await mk('E', 1, '4');
+  assert.equal(full.status, 400);
+  assert.equal(full.body.error, 'table_full');
+  assert.equal(full.body.used, 12);
+  assert.equal(full.body.free, 0);
+  assert.equal(full.body.capacity, 12);
+  // editar: mover a otra mesa o subir lugares también respeta el límite
+  const e = (await mk('F', 3, '5')).body.invitation;
+  assert.equal((await call('PUT', `/api/admin/invitations/${e.id}`, { table: '4' })).body.error, 'table_full');
+  assert.equal((await call('PUT', `/api/admin/invitations/${e.id}`, { seats: 12 })).status, 200); // 12 solos en la 5
+  assert.equal((await call('PUT', `/api/admin/invitations/${e.id}`, { seats: 13 })).status, 400);
+  assert.equal((await call('PUT', `/api/admin/invitations/${e.id}`, { guest: 'F2' })).status, 200); // no cuenta contra sí misma
+  const cfg = (await call('GET', '/api/admin/invitations')).body.config;
+  assert.equal(cfg.tableCount, 15);
+  assert.equal(cfg.tableCapacity, 12);
 });

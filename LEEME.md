@@ -26,8 +26,10 @@
 
 Menús (barra lateral; en el teléfono, arriba):
 
-- **Invitaciones** — resumen (generadas, abiertas, confirmadas, lugares confirmados contra asignados, sin responder, no asistirán) y lista con el **enlace completo** de cada invitación: **Copiar enlace**, **Abrir enlace**, enviar por WhatsApp, **editar** y **eliminar**. Búsqueda, filtros y exportación a Excel (CSV).
-- **Crear invitación** — nombre del invitado, lugares y mesa → **Generar invitación** → te da el enlace para copiar o enviar por WhatsApp.
+- **Invitaciones** — resumen (generadas, abiertas, confirmadas, lugares confirmados contra asignados, sin responder, no asistirán) y lista con el **enlace completo** de cada invitación: **Copiar enlace**, **Abrir enlace**, enviar por WhatsApp, **editar** y **eliminar**. Búsqueda (por nombre, **mesa** —escribe `7` o `mesa 7`— o `principal`), filtro por **estado** (confirmadas, sin responder, no asistirán, sin abrir) y filtro por **mesa** (también “sin mesa”). Exportación a Excel (CSV).
+- **Crear invitación** — nombre del invitado, lugares y mesa (se elige de una lista: Principal o 1–15, mostrando cuántos lugares libres quedan; **máximo 12 por mesa**) → **Generar invitación** → te da el enlace para copiar o enviar por WhatsApp.
+
+- **Mesas** — mapa del salón con las mesas cuadradas (3 lugares por lado, 12 por mesa): **Principal** arriba, **1–6** a la izquierda, **7–8–9** abajo, **10–15** a la derecha y la pista de baile al centro. Cada lugar se pinta según quién lo ocupa (ya ingresó, confirmó, sin responder, no asistirá, liberado o libre). Toca una mesa para ver sus invitados; abajo aparecen las invitaciones aún sin mesa.
 
 **Abrir enlace** muestra la invitación como la verá el invitado, en *modo vista previa*: no cuenta como apertura ni cambia ninguna confirmación. El enlace que debes enviar es el que se copia (sin `?preview`).
 
@@ -36,11 +38,16 @@ Menús (barra lateral; en el teléfono, arriba):
 ## 3. Control de acceso con QR (el día del evento)
 
 - Al final de **cada invitación** aparece **“Tu pase de entrada”** con un código QR personal (con nombre, lugares y mesa).
-- Cuando el invitado llega, **escaneas su QR con la cámara** de tu celular: se abre la pantalla **Control de acceso** con su nombre, mesa, lugares asignados y cuántos confirmó. Indicas **cuántas personas ingresan** y pulsas **Registrar ingreso**. Nunca deja pasar de los lugares asignados y permite registrar por partes (si llegan en momentos distintos). Si te equivocas, **Corregir total de ingresados**.
-- En el generador hay un **tercer menú: Asistencia** — confirmados, han ingresado, confirmados que ya llegaron, faltan por llegar y llegaron sin confirmar, con tabla por invitación, corrección y exportación a CSV. Cada ingreso también aparece en **Actividad**.
+- Cuando el invitado llega, **escaneas su QR con la cámara** de tu celular: se abre la pantalla **Control de acceso** con su nombre, mesa, lugares asignados y cuántos confirmó. Indicas **cuántas personas ingresan** y pulsas **Registrar ingreso**. **El límite son los lugares que el invitado CONFIRMÓ, no los asignados**: si confirmó 5 de 10, solo pueden entrar 5. Quien no ha confirmado (o avisó que no asistiría) no puede registrarse hasta que confirme desde su invitación. Permite registrar por partes (si llegan en momentos distintos). Si te equivocas, **Corregir total de ingresados**.
+- En el generador hay un **tercer menú: Asistencia** — confirmados, han ingresado, confirmados que ya llegaron y faltan por llegar, con filtros por asistencia y por mesa, tabla por invitación, corrección y exportación a CSV. Cada ingreso también aparece en **Actividad**.
 - Sin contraseña, igual que el resto: quien tenga el enlace del QR de una invitación puede abrir esa pantalla. Como el QR solo viene dentro de la invitación de cada persona, el riesgo es bajo; si algún día quieres protegerlo, se puede agregar un PIN para la puerta.
 
-## 4. Cambiar datos del evento
+## 4. Fechas límite y datos del evento
+- **Confirmar o modificar asistencia:** hasta el **20 de noviembre de 2026** (23:59, hora de México). Después, el invitado sigue viendo su invitación y su respuesta, pero **el botón desaparece** y aparece una leyenda de que el plazo terminó. Mientras el plazo está abierto, la invitación indica “Puedes confirmar o modificar tu asistencia hasta el 20 de noviembre de 2026”. El servidor también rechaza cambios fuera de plazo.
+- **Vigencia de la invitación:** se puede ver hasta el **2 de diciembre de 2026** (23:59). Después muestra que ya no está disponible. (El enlace de “Abrir enlace” del generador también deja de abrir.)
+- **Enlace eliminado:** muestra “Este enlace ya no está disponible. Si crees que se trata de un error, comunícate con el anfitrión.”
+- Las fechas y el número/capacidad de mesas están en `public/event.json` (`rsvpDeadlineISO`, `viewUntilISO`, `tables.count`, `tables.capacity`).
+
 Edita `public/event.json` (fecha, nombres, direcciones, horarios, código de vestimenta) y vuelve a publicar. Los enlaces de Google Maps se arman solos. El vestido es `public/dress.webp` (fondo transparente).
 
 ## 5. Probar en tu computadora (opcional)

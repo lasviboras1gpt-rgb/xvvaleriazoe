@@ -1,6 +1,7 @@
 // Núcleo de la API de invitaciones. No depende de ningún servidor concreto:
 // recibe un "store" (Netlify Blobs en producción, archivos en local/pruebas).
 import crypto from 'node:crypto';
+import { DEFAULT_RULES } from './rules.mjs';
 
 const ID_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789'; // sin 0/o/1/l/i para evitar confusiones
 const ID_LENGTH = 10;
@@ -19,7 +20,19 @@ export const isValidId = (id) => typeof id === 'string' && ID_RE.test(id);
 
 const clean = (s) => String(s ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
 
-function validateFields(body, { partial = false } = {}) {
+// Mesas válidas: vacío (sin mesa), "Principal" o un número de 1 a tableCount.
+export function normalizeTable(raw, rules = DEFAULT_RULES) {
+  const t = String(raw ?? '').replace(/\s+/g, ' ').trim().replace(/^mesa\s+/i, '');
+  if (!t) return '';
+  if (t.toLowerCase() === rules.mainTable.toLowerCase()) return rules.mainTable;
+  if (/^\d{1,3}$/.test(t)) {
+    const n = parseInt(t, 10);
+    if (n >= 1 && n <= rules.tableCount) return String(n);
+  }
+  return null;
+}
+
+function validateFields(body, { partial = false, rules = DEFAULT_RULES } = {}) {
   const out = {};
   const errors = [];
   if (!partial || body.guest !== undefined) {
@@ -34,20 +47,15 @@ function validateFields(body, { partial = false } = {}) {
     else out.seats = seats;
   }
   if (!partial || body.table !== undefined) {
-    const table = clean(body.table);
-    if (table.length > 20) errors.push('table_too_long');
+    const table = normalizeTable(clean(body.table), rules);
+    if (table === null) errors.push('table_invalid');
     else out.table = table;
   }
   return { out, errors };
 }
 
-const publicView = (inv) => ({
-  id: inv.id,
-  guest: inv.guest,
-  seats: inv.seats,
-  table: inv.table,
-  rsvp: { status: inv.rsvp.status, count: inv.rsvp.count },
-});
+// Lugares con los que se puede entrar: los CONFIRMADOS (no los asignados).
+export const entryLimit = (inv) => (inv.rsvp.status === 'confirmed' ? inv.rsvp.count : 0);
 
 // Vista para la pantalla de control de acceso (la que abre el QR). Solo lo necesario.
 const checkinView = (inv) => ({
@@ -56,6 +64,7 @@ const checkinView = (inv) => ({
   seats: inv.seats,
   table: inv.table,
   rsvp: { status: inv.rsvp.status, count: inv.rsvp.count },
+  limit: entryLimit(inv),
   attended: inv.attended || 0,
 });
 
@@ -97,7 +106,19 @@ const sha = (s) => crypto.createHash('sha256').update(String(s)).digest();
 
 export const MIN_TOKEN_LENGTH = 20;
 
-export function createApi({ store, adminToken, now = () => Date.now(), push = null }) {
+export function createApi({ store, adminToken, now = () => Date.now(), push = null, rules: rulesIn = {} }) {
+  const rules = { ...DEFAULT_RULES, ...rulesIn };
+  const publicView = (inv) => ({
+    id: inv.id,
+    guest: inv.guest,
+    seats: inv.seats,
+    table: inv.table,
+    rsvp: { status: inv.rsvp.status, count: inv.rsvp.count },
+    rsvpOpen: now() <= rules.rsvpUntil,
+    rsvpUntil: new Date(rules.rsvpUntil).toISOString(),
+  });
+  const expired = () => now() > rules.viewUntil;
+  const expiredErr = () => err(410, 'expired', { until: new Date(rules.viewUntil).toISOString() });
   const res = (status, body) => ({ status, body });
   const err = (status, code, extra = {}) => res(status, { error: code, ...extra });
 
@@ -120,6 +141,7 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
       guest: inv.guest,
       table: inv.table,
       seats: inv.seats,
+      confirmed: entryLimit(inv),
       ...extra,
     };
     await store.addEvent(key, ev);
@@ -135,6 +157,7 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
     if (!isValidId(id)) return err(404, 'not_found');
     const inv = await store.getInvitation(id);
     if (!inv) return err(404, 'not_found');
+    if (expired()) return expiredErr();
     return res(200, publicView(inv));
   }
 
@@ -142,6 +165,7 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
     if (!isValidId(id)) return err(404, 'not_found');
     const inv = await store.getInvitation(id);
     if (!inv) return err(404, 'not_found');
+    if (expired()) return expiredErr();
     const t = now();
     const first = inv.openCount === 0;
     inv.openCount += 1;
@@ -158,6 +182,8 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
     if (!isValidId(id)) return err(404, 'not_found');
     const inv = await store.getInvitation(id);
     if (!inv) return err(404, 'not_found');
+    if (expired()) return expiredErr();
+    if (now() > rules.rsvpUntil) return err(403, 'rsvp_closed', { until: new Date(rules.rsvpUntil).toISOString() });
     if (typeof body?.attending !== 'boolean') return err(400, 'attending_required');
 
     let status;
@@ -212,7 +238,9 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
       total = prev + add;
     } else return err(400, 'count_invalid');
     if (!Number.isInteger(total) || total < 0) return err(400, 'count_invalid');
-    if (total > inv.seats) return err(400, 'count_exceeds_seats', { seats: inv.seats, attended: prev });
+    const limit = entryLimit(inv);
+    if (limit === 0 && total > 0) return err(409, 'not_confirmed', { status: inv.rsvp.status, attended: prev });
+    if (total > limit) return err(400, 'count_exceeds_confirmed', { confirmed: limit, seats: inv.seats, attended: prev });
     if (total === prev) return res(200, checkinView(inv));
     inv.attended = total;
     inv.attendedAt = now();
@@ -223,15 +251,34 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
   }
 
   // ---------- Rutas de administración ----------
+  const adminConfig = () => ({
+    tableCount: rules.tableCount,
+    tableCapacity: rules.tableCapacity,
+    mainTable: rules.mainTable,
+    rsvpUntil: new Date(rules.rsvpUntil).toISOString(),
+    viewUntil: new Date(rules.viewUntil).toISOString(),
+  });
+
+  // Capacidad por mesa: la suma de lugares asignados en una mesa no puede pasar del límite.
+  async function checkTableCapacity(table, seats, exceptId) {
+    if (!table) return null;
+    const list = await store.listInvitations();
+    const used = list.filter((i) => i.table === table && i.id !== exceptId).reduce((n, i) => n + i.seats, 0);
+    if (used + seats > rules.tableCapacity) return err(400, 'table_full', { table, used, capacity: rules.tableCapacity, free: Math.max(0, rules.tableCapacity - used) });
+    return null;
+  }
+
   async function adminList() {
     const list = await store.listInvitations();
     list.sort((a, b) => b.createdAt - a.createdAt);
-    return res(200, { invitations: list, stats: computeStats(list) });
+    return res(200, { invitations: list, stats: computeStats(list), config: adminConfig() });
   }
 
   async function adminCreate(body) {
-    const { out, errors } = validateFields(body || {});
+    const { out, errors } = validateFields(body || {}, { rules });
     if (errors.length) return err(400, 'validation', { details: errors });
+    const full = await checkTableCapacity(out.table, out.seats);
+    if (full) return full;
     const t = now();
     const inv = {
       id: newId(),
@@ -256,8 +303,14 @@ export function createApi({ store, adminToken, now = () => Date.now(), push = nu
     if (!isValidId(id)) return err(404, 'not_found');
     const inv = await store.getInvitation(id);
     if (!inv) return err(404, 'not_found');
-    const { out, errors } = validateFields(body || {}, { partial: true });
+    const { out, errors } = validateFields(body || {}, { partial: true, rules });
     if (errors.length) return err(400, 'validation', { details: errors });
+    const newTable = out.table !== undefined ? out.table : inv.table;
+    const newSeats = out.seats !== undefined ? out.seats : inv.seats;
+    if (out.table !== undefined || out.seats !== undefined) {
+      const full = await checkTableCapacity(newTable, newSeats, inv.id);
+      if (full) return full;
+    }
     Object.assign(inv, out);
     if ((inv.attended || 0) > inv.seats) inv.attended = inv.seats; // nunca más adentro que lugares asignados
     let warning;
